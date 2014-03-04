@@ -33,6 +33,7 @@ Gem::Specification.new do |s|
   s.add_runtime_dependency 'scashin133-syslog_logger', ['~> 1.7']
   s.add_runtime_dependency 'airbrake', '~> 3.1'
   s.add_runtime_dependency 'pebblebed', '~> 0.0.42'
+  s.add_runtime_dependency 'nokogiri', '~> 1.6.1'
 
   s.add_development_dependency "rspec"
   s.add_development_dependency "rake"
