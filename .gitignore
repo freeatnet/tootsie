@@ -4,7 +4,6 @@
 /log
 /tmp
 /trash
-/config
 .rvmrc
 *.sublime-project
 *.sublime-workspace
@@ -12,3 +11,5 @@
 /coverage
 /pkg
 /Gemfile.lock
+/config/tootsie.conf
+/config/site.rb
