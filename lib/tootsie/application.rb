@@ -33,14 +33,6 @@ module Tootsie
 
       @logger.info "Starting"
 
-      if @configuration.airbrake_options.respond_to?(:each_pair)
-        Airbrake.configure do |c|
-          @configuration.airbrake_options.each_pair do |key, value|
-            c.send("#{key}=", value)
-          end
-        end
-      end
-
       queue_options = @configuration.queue_options ||= {}
 
       adapter = (queue_options[:adapter] || 'sqs').to_s
