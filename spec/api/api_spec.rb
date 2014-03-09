@@ -31,17 +31,17 @@ describe V1 do
       it 'posts job on queue' do
         queue.stub(:push) { nil }
 
-        post '/jobs', JSON.dump({
+        attributes = {
           type: 'image',
           notification_url: "http://example.com/transcoder_notification",
+          reference: {'meaning' => 42},
           params: {}
-        })
+        }
+
+        post '/jobs', JSON.dump(attributes)
         last_response.status.should == 201
 
-        expect(queue).to have_received(:push).with(Job.new(
-          type: 'image',
-          notification_url: "http://example.com/transcoder_notification",
-          params: {}))
+        expect(queue).to have_received(:push).with(Job.new(attributes))
       end
 
     end
