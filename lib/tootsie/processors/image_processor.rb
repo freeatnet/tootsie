@@ -190,7 +190,11 @@ module Tootsie
                 end
                 output.save
 
-                result[:outputs] << {:url => output.public_url}
+                result[:outputs] << {
+                  :url => output.public_url,
+                  :width => new_width,
+                  :height => new_height
+                }
               ensure
                 output.close
               end
