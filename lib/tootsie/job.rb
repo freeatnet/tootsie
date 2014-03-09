@@ -83,13 +83,13 @@ module Tootsie
         rescue => exception
           Application.get.report_exception(exception, "Notification failed with exception")
         end
-      end
-
-      if (river = Application.get.river)
-        begin
-          river.publish(message)
-        rescue => exception
-          Application.get.report_exception(exception, "River notification failed with exception")
+      else
+        if (river = Application.get.river)
+          begin
+            river.publish(message)
+          rescue => exception
+            Application.get.report_exception(exception, "River notification failed with exception")
+          end
         end
       end
     end

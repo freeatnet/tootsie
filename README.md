@@ -112,17 +112,22 @@ Tootise can report errors to services such as Airbrake and Rollbar. To accomplis
 API
 ---
 
-To schedule jobs, one uses the REST API:
+### `POST /api/tootsie/v1/jobs`
 
-* `POST /api/tootsie/v1/jobs`: Schedule a new job. Returns 201 if the job was created.
-* `GET /api/tootsie/v1/status`: Get some current processing status as a JSON hash.
-
-The job must be posted as an JSON hash with the content type `application/json`. Common to all jobs are these keys:
+Schedule a new job. Returns 201 if the job was created. The job must be posted as an JSON hash with the content type `application/json`. Common to all jobs are these keys:
 
 * `type`: Type of job. See sections below for details.
 * `notification_url`: Optional notification URL. Progress (including completion and failure) will be reported using POSTs.
 * `retries`: Maximum number of retries, if any. Defaults to 5.
 * `params`: Job-type-specific parameters.
+* `reference`: A client-supplied value (or hash of values). Tootsie ignores the contents of this value. The value will be passed as part of notifications.
+
+### `GET /api/tootsie/v1/status`
+
+Get some current processing status as a JSON hash.
+
+Workflow
+--------
 
 The Tootsie daemon pops jobs from a queue and processes them. Each job specifies an input, an output, and transcoding parameters. Optionally the job may also specify a notification URL which is invoked to inform the caller about job progress.
 
@@ -220,16 +225,25 @@ Completion notification provides the following data:
 * `height`: height, in pixels, of original image.
 * `depth`: depth, in bits, of original image.
 
-### Notification hook
+### Notifications
 
-If a notification hook URL is provided, events will be sent to it using `POST` requests as JSON data. These are 'fire and forget' and will not be retried on failure, and the response status code is ignored.
+Normally, Tootsie will publish notifications to an AMQP exchange called `tootsie`. Each event contains:
 
-There are several types of events, indicated by the `event` key:
+* `event`: See below.
+* `reference`: If the job was posted with a reference value, this contains that reference.
+* `time_taken`: See below.
+* `reason`: See below.
+
+In addition, job-specific data is added to the event. See the different job types for information about those keys.
+
+Types of events:
 
 * `started`: The job was started.
 * `complete`: The job was complete. The key `time_taken` will contain the time taken for the job, in seconds. Additional data will be provided that are specific to the type of job.
 * `failed`: The job failed. The key `reason` will contain a textual explanation for the failure.
 * `failed_will_retry`: The job failed, but is being rescheduled for retrying. The key `reason` will contain a textual explanation for the failure.
+
+If a notification webhook URL is provided in original job request, events will instead be sent to that URL using `POST` requests as JSON data. These are 'fire and forget' and will not be retried on failure, and the response status code is ignored.
 
 ### Resource URLs
 
