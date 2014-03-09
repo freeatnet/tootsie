@@ -20,18 +20,19 @@ module Tootsie
       post %r{/job(s)?/?} do
         job_data = JSON.parse(request.env["rack.input"].read)
         logger.info "Handling job: #{job_data.inspect}"
-        job = Tasks::JobTask.new(job_data)
+
+        job = Job.new(job_data)
         unless job.valid?
           halt 400, 'Invalid job specification'
         end
-        Application.get.task_manager.schedule(job)
+        Application.get.queue.push(job)
+
         halt 201, "Job saved."
       end
 
       get '/status' do
-        queue = Application.get.queue
         out = {}
-        if (count = queue.count)
+        if (count = Application.get.queue.count)
           out['queue_count'] = count
         end
         out.to_json

@@ -9,11 +9,10 @@ gem 'mime-types', '~> 1.16'
 gem 'xml-simple', '~> 1.0'
 gem 's3', '= 0.3.8'  # Later versions are broken
 gem 'bunny', '~> 0.8.0'
-gem 'sqs', '~> 0.1'
 gem 'unicorn', '~> 4.1'
 gem 'i18n', '>= 0.4'
 gem 'scashin133-syslog_logger', '~> 1.7'
-gem 'pebblebed', '~> 0.0.42'
+gem 'pebblebed', '~> 0.1'
 gem 'nokogiri', '~> 1.6.1'
 
 # These are included for convenience, allowing Tootsie to report to these services.

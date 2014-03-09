@@ -35,28 +35,20 @@ module Tootsie
 
       queue_options = @configuration.queue_options ||= {}
 
-      adapter = (queue_options[:adapter] || 'sqs').to_s
-      case adapter
-        when 'sqs'
-          @queue = Tootsie::SqsQueue.new(
-            :queue_name => queue_options[:queue],
-            :access_key_id => @configuration.aws_access_key_id,
-            :secret_access_key => @configuration.aws_secret_access_key,
-            :max_backoff => queue_options[:max_backoff])
-        when 'amqp'
-          @queue = Tootsie::AmqpQueue.new(
-            :host_name => queue_options[:host],
-            :queue_name => queue_options[:queue],
-            :max_backoff => queue_options[:max_backoff])
-        when 'file'
-          @queue = Tootsie::FileSystemQueue.new(queue_options[:root])
-        when 'null'
-          @queue = Tootsie::NullQueue.new
-        else
-          raise 'Invalid queue configuration'
-      end
+      @queue = Tootsie::Queue.new(
+        :host_name => queue_options[:host],
+        :queue_name => queue_options[:queue],
+        :max_backoff => queue_options[:max_backoff])
 
-      @task_manager = TaskManager.new(@queue)
+      @river = Pebblebed::River.new
+    end
+
+    def process_jobs
+      loop do
+        @queue.consume do |message|
+          Job.from_json(message).execute
+        end
+      end
     end
 
     def s3_service
@@ -67,19 +59,15 @@ module Tootsie
         :secret_access_key => @configuration.aws_secret_access_key)
     end
 
-    # Handle exceptions in a block. Will log as appropriate.
-    def handle_exceptions(&block)
-      begin
-        yield
-      rescue => exception
-        if @logger.respond_to?(:exception)
-          # This allows us to plug in custom exception handling
-          @logger.exception(exception)
-        else
-          @logger.error("Exception caught: #{exception.class}: #{exception}")
-        end
+    # Report an exception.
+    def report_exception(message = nil, &block)
+      if @logger.respond_to?(:exception)
+        # This allows us to plug in custom exception handling
+        logger.error(message) if message
+        @logger.exception(exception)
+      else
+        @logger.error("#{message}: #{exception.class}: #{exception}")
       end
-      nil
     end
 
     class << self
@@ -95,9 +83,9 @@ module Tootsie
     end
 
     attr_reader :configuration
-    attr_reader :task_manager
     attr_reader :queue
     attr_reader :logger
+    attr_reader :river
 
   end
 

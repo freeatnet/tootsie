@@ -1,14 +1,14 @@
 module Tootsie
 
   # A queue which uses the AMQP protocol.
-  class AmqpQueue
+  class Queue
 
     def initialize(options = {})
       options.assert_valid_keys(:host_name, :queue_name, :max_backoff)
       @backoff = Utility::Backoff.new(:max => options[:max_backoff])
       @logger = Application.get.logger
       @host_name = options[:host_name] || 'localhost'
-      @queue_name = options[:queue_name] || 'tootsie'
+      @name = options[:queue_name] || 'tootsie'
     end
 
     def count
@@ -21,45 +21,38 @@ module Tootsie
       end
     end
 
-    def push(item)
-      data = item.to_json
+    def push(message)
+      data = message.to_json
       with_retry do
         with_connection do
-          @exchange.publish(data, :persistent => true, :key => @queue_name)
+          @exchange.publish(data, persistent: true, key: @name)
         end
       end
     end
 
-    def pop(options = {})
-      item = nil
+    def consume(&block)
       loop do
         @backoff.with do
           message = nil
           with_retry do
             with_connection do
-              message = @queue.pop(:ack => true)
+              message = @queue.pop(ack: true)
             end
           end
           if message
             data = message[:payload]
-            data = nil if data == :queue_empty
-            if data
-              @logger.info "Popped: #{data.inspect}"
-              item = JSON.parse(data)
+            if data and data != :queue_empty
+              @logger.info { "Consuming: #{data.inspect}" }
+              message = JSON.parse(data)
+              yield message
               with_connection do
-                @queue.ack(:delivery_tag => message[:delivery_details][:delivery_tag])
+                @queue.ack(delivery_tag: message[:delivery_details][:delivery_tag])
               end
             end
           end
-          if item or not options[:wait]
-            true
-          else
-            false
-          end
         end
-        break if item
       end
-      item
+      nil
     end
 
     private
@@ -81,7 +74,7 @@ module Tootsie
       def with_retry(&block)
         begin
           result = yield
-        rescue StandardError => e
+        rescue => e
           @logger.error("Queue access failed with exception #{e.class} (#{e.message}), will retry")
           sleep(0.5)
           retry
@@ -103,7 +96,7 @@ module Tootsie
           end
 
           unless @queue
-            @queue = @connection.queue(@queue_name, :durable => true)
+            @queue = @connection.queue(@name, :durable => true)
           end
         rescue Bunny::ServerDownError => e
           @logger.error "Could not connect: #{e}"

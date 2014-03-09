@@ -51,7 +51,7 @@ module Tootsie
               exit(2)
             end
             with_lifecycle_logging("Worker [#{Process.pid}]") do
-              @app.task_manager.run!
+              @app.process_jobs
             end
           end
           with_lifecycle_logging('Main process') do

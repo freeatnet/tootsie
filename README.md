@@ -20,7 +20,7 @@ The API providers a simple way to submit new jobs.
 
 ### Job manager
 
-The job manager accepts new transcoding jobs and executes the. The job manager uses a persistent queue, and supports either local file-based queues (not recommended and mostly suitable for testing), AMQP queues (eg., RabbitMQ) and Amazon Simple Queue Service (aka SQS).
+The job manager accepts new transcoding jobs and executes the. The job manager uses a persistent queue, and uses an AMQP queue.
 
 ### Transcoding processors
 
@@ -33,8 +33,9 @@ Tootsie can read files via HTTP[S], and can upload data via HTTP[S] POSTs. In ad
 Dependencies
 ------------
 
-* Ruby 1.9 or later. (Should work with 1.8.7 still, but the tests require 1.9, so no guarantees.)
+* Ruby 1.9.3 or later.
 * Unix-like system (no Windows support currently).
+* AMQP server such as RabbitMQ.
 * **For video jobs**
   * FFmpeg
   * id3v2 (optional)
@@ -42,11 +43,7 @@ Dependencies
   * ImageMagick
   * Exiv2
   * pngcrush (optional)
-
-### Optional
-
-* Amazon S3 account, for loading and storage of files.
-* AMQP-compliant server (such as RabbitMQ) or Amazon Simple Queue Service for internal task queue management.
+* Amazon S3 account (optional), for loading and storage of files.
 
 Installation
 ------------
@@ -58,15 +55,13 @@ Running
 
 Create a YAML configuration file. Call it something like `tootsie.conf`:
 
-    --- 
-      queue:
-        adapter: sqs
-        queue: tootsie
-      aws_access_key_id: <your Amazon key>
-      aws_secret_access_key: <your Amazon secret>
-      pid_path: <where to write pid file>
-      log_path: <where to write log file>
-      worker_count: <number of workers>
+    queue:
+      queue: tootsie
+    aws_access_key_id: <your Amazon key>
+    aws_secret_access_key: <your Amazon secret>
+    pid_path: <where to write pid file>
+    log_path: <where to write log file>
+    worker_count: <number of workers>
 
 Start the job manager with `tootsie -c tootsie.conf`. (It will stay in the foreground unless you provide `-d`.)
 
@@ -104,41 +99,15 @@ The configuration is a YAML document with the following keys:
 * `log_path`: Where to write log file.
 * `worker_count`: Number of workers. Must be at least 1.
 * `queue`:
-    * `adapter`: Name of queue implementation to use; one of `sqs` (Amazon SQS), `amqp` (AMQP, such as RabbitMQ) or `file` (local file system, not recommended except for casual testing).
-    * *queue options*
+    * `queue`: The name of the AMQP queue, defaults to `tootsie`.
+    * `host_name`: Host name of AMQP server, defaults to `localhost`.
+    * `max_backoff`: Max seconds to wait when queue is empty, defaults to 2. Note that when running a large number of workers, you should increase the backoff interval to avoid incurring a lot of queue requests.
 
 ### Exception notification
 
 Tootise can report errors to services such as Airbrake and Rollbar. To accomplish this, provide a `LOGGER` object that supports the method:
 
     def exception(exception)
-
-### SQS
-
-The `sqs` adapter takes the following options:
-
-* `queue`: The name of queue, defaults to `tootsie`.
-* `max_backoff`: Max seconds to wait when queue is empty, defaults to 2.
-
-Note that when running a large number of workers, you should increase the backoff interval to avoid incurring a lot of queue requests.
-
-Using SQS requires that you provide `aws_access_key_id` and `aws_secret_access_key` in the main config.
-
-### AMQP
-
-For the `amqp` adapter:
-
-* `queue`: The name of the queue, defaults to `tootsie`.
-* `host_name`: Host name of AMQP server, defaults to `localhost`.
-* `max_backoff`: Max seconds to wait when queue is empty, defaults to 2.
-
-Note that when running a large number of workers, you should increase the backoff interval to avoid incurring a lot of queue requests.
-
-### File
-
-For the `file` adapter:
-
-    root: <directory to store files>
 
 API
 ---
@@ -292,7 +261,6 @@ Current limitations
 -------------------
 
 * No client access control; anyone can submit jobs.
-* SQS: Due to limitations in the `sqs` gem, only US queues may be used at the moment.
 * No Windows support.
 
 License
