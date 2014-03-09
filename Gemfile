@@ -13,9 +13,12 @@ gem 'sqs', '~> 0.1'
 gem 'unicorn', '~> 4.1'
 gem 'i18n', '>= 0.4'
 gem 'scashin133-syslog_logger', '~> 1.7'
-gem 'airbrake', '~> 3.1'
 gem 'pebblebed', '~> 0.0.42'
 gem 'nokogiri', '~> 1.6.1'
+
+# These are included for convenience, allowing Tootsie to report to these services.
+gem 'airbrake', '~> 3.1'
+gem 'rollbar', '~> 0.12'
 
 group :test do
   gem "rspec"

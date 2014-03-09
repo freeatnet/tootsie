@@ -47,7 +47,6 @@ Dependencies
 
 * Amazon S3 account, for loading and storage of files.
 * AMQP-compliant server (such as RabbitMQ) or Amazon Simple Queue Service for internal task queue management.
-* [Airbrake](https://airbrake.io/pages/home) or [Errbit](https://github.com/errbit/errbit), for logging exceptions.
 
 Installation
 ------------
@@ -107,12 +106,12 @@ The configuration is a YAML document with the following keys:
 * `queue`:
     * `adapter`: Name of queue implementation to use; one of `sqs` (Amazon SQS), `amqp` (AMQP, such as RabbitMQ) or `file` (local file system, not recommended except for casual testing).
     * *queue options*
-* `airbrake`:
-    * *options for Airbrake*
 
-### Airbrake
+### Exception notification
 
-To enable [Airbrake](https://airbrake.io/pages/home) reporting (which also works with [Errbit](https://github.com/errbit/errbit)), add each configuration option under the `airbrake` key. Keys include `api_key`, `host` and so on. Consult the [airbrake gem](https://github.com/airbrake/airbrake) for the full list of configuration keys.
+Tootise can report errors to services such as Airbrake and Rollbar. To accomplish this, provide a `LOGGER` object that supports the method:
+
+    def exception(exception)
 
 ### SQS
 

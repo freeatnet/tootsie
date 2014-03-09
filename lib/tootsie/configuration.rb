@@ -19,7 +19,6 @@ module Tootsie
           self.send("#{key}=", value)
         end
       end
-      @airbrake_options = config[:airbrake]
       @queue_options = (config[:queue] ||= {}).symbolize_keys
 
       # Backwards compatibility with old options
@@ -38,7 +37,6 @@ module Tootsie
     attr_accessor :worker_count
     attr_accessor :aws_secret_access_key
     attr_accessor :aws_access_key_id
-    attr_accessor :airbrake_options
 
   end
 

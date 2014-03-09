@@ -80,9 +80,7 @@ module Tootsie
       begin
         yield
       rescue => exception
-        if Airbrake.configuration.api_key
-          Airbrake.notify_or_ignore(exception)
-        elsif @logger.respond_to?(:exception)
+        if @logger.respond_to?(:exception)
           # This allows us to plug in custom exception handling
           @logger.exception(exception)
         else
