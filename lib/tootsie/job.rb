@@ -8,7 +8,9 @@ module Tootsie
     VALID_TYPES = %w(video audio image).freeze
 
     def initialize(attributes = {})
-      attributes = attributes.with_indifferent_access
+      attributes = attributes.symbolize_keys
+      attributes.assert_valid_keys(
+        :type, :retries, :notification_url, :params, :reference)
       @type = attributes[:type].to_s
       @retries_left = attributes[:retries_left] || DEFAULT_MAX_RETRIES
       @created_at = Time.now
