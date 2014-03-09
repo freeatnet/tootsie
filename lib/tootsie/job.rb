@@ -12,7 +12,7 @@ module Tootsie
       attributes.assert_valid_keys(
         :type, :retries, :notification_url, :params, :reference)
       @type = attributes[:type].to_s
-      @retries_left = attributes[:retries_left] || DEFAULT_MAX_RETRIES
+      @retries_left = attributes[:retries] || DEFAULT_MAX_RETRIES
       @created_at = Time.now
       @notification_url = attributes[:notification_url]
       @params = attributes[:params]
@@ -106,7 +106,7 @@ module Tootsie
       return {
         :type => @type,
         :notification_url => @notification_url,
-        :retries_left => @retries_left,
+        :retries => @retries_left,
         :reference => @reference,
         :params => @params
       }
@@ -120,7 +120,6 @@ module Tootsie
       attributes.to_json
     end
 
-    attr_accessor :retries_left
     attr_accessor :created_at
     attr_accessor :notification_url
     attr_accessor :params
