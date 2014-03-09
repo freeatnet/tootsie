@@ -39,7 +39,7 @@ describe V1 do
         }
 
         post '/jobs', JSON.dump(attributes)
-        last_response.status.should == 201
+        last_response.status.should eq 201
 
         expect(queue).to have_received(:push).with(Job.new(attributes))
       end
@@ -53,7 +53,7 @@ describe V1 do
       queue.stub(:count) { 42 }
 
       get '/status'
-      last_response.status.should == 200
+      last_response.status.should eq 200
       JSON.parse(last_response.body).should eq({"queue_count" => 42})
     end
 
