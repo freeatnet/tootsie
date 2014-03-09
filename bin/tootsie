@@ -1,8 +1,5 @@
 #!/usr/bin/env ruby
 
-load(File.expand_path('../../boot.rb', __FILE__))
-
-$:.unshift(File.expand_path('../../lib', __FILE__))
-require 'tootsie'
+require_relative '../config/environment'
 
 Tootsie::Runner.new.run!(ARGV)

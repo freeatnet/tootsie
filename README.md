@@ -1,7 +1,9 @@
 Tootsie
 =======
 
-Tootsie (formerly called Tranz) is a simple, robust, scalable audio/video/image transcoding/modification application.
+**Note: Tootsie is currently distributed as an application, and no longer as a gem.**
+
+Tootsie is a simple, robust, scalable audio/video/image transcoding/modification application.
 
 Tootsie can transcode audio, video and images between different formats, and also perform basic manipulations such as photo scaling and cropping, for generating thumbnails and photos at different resolutions.
 
@@ -68,14 +70,6 @@ Create a YAML configuration file. Call it something like `tootsie.conf`:
       worker_count: <number of workers>
 
 Start the job manager with `tootsie -c tootsie.conf`. (It will stay in the foreground unless you provide `-d`.)
-
-Now create a rackup file, and call it `config.ru`:
-
-    require 'tootsie'
-    Tootsie::Application.new.configure!('tootsie.conf')
-    map '/api/tootsie/v1' do
-      run Tootsie::API::V1
-    end
 
 To run the web service, you will need a Rack-compatible web server, such as Unicorn. To start Unicorn on port 8080:
 
@@ -307,7 +301,7 @@ License
 
 This software is licensed under the MIT License.
 
-Copyright © 2010-2013 Alexander Staubo
+Copyright © 2010-2014 Alexander Staubo
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
 
