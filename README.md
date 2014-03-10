@@ -20,7 +20,7 @@ The API providers a simple way to submit new jobs.
 
 ### Job manager
 
-The job manager accepts new transcoding jobs and executes the. The job manager uses a persistent queue, and uses an AMQP queue.
+The job manager typically runs as a daemon. It processes new job requests in the queue and executes them.
 
 ### Transcoding processors
 
@@ -48,7 +48,7 @@ Dependencies
 Installation
 ------------
 
-`gem install tootsie`
+    git clone https://github.com/bengler/tootsie.git
 
 Running
 -------
@@ -108,6 +108,10 @@ The configuration is a YAML document with the following keys:
 Tootise can report errors to services such as Airbrake and Rollbar. To accomplish this, provide a `LOGGER` object that supports the method:
 
     def exception(exception)
+
+### Configuration overrides
+
+Place a file `config/site.rb` containing configuration overrides. For example, this would be the place to set up any site-specific logging.
 
 API
 ---
@@ -225,7 +229,7 @@ Completion notification provides the following data:
 * `height`: height, in pixels, of original image.
 * `depth`: depth, in bits, of original image.
 
-### Notifications
+## Notifications
 
 Normally, Tootsie will publish notifications to an AMQP exchange called `tootsie`. Each event contains:
 
@@ -245,7 +249,7 @@ Types of events:
 
 If a notification webhook URL is provided in original job request, events will instead be sent to that URL using `POST` requests as JSON data. These are 'fire and forget' and will not be retried on failure, and the response status code is ignored.
 
-### Resource URLs
+## Resource URLs
 
 Tootsie supports referring to inputs and outputs using URLs, namely `file:` and `http:`. Additionally, Tootsie supports its own proprietary S3 URL format.
 
@@ -270,12 +274,6 @@ Example S3 URLs:
 * `s3:myapp/video`
 * `s3:myapp/thumbnails?acl=public-read&storage_class=reduced_redundancy`
 * `s3:myapp/images/12345?content_type=image/jpeg`
-
-Current limitations
--------------------
-
-* No client access control; anyone can submit jobs.
-* No Windows support.
 
 License
 -------
