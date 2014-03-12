@@ -18,7 +18,9 @@ module Tootsie
       end
 
       post %r{/job(s)?/?} do
-        job_data = JSON.parse(request.env["rack.input"].read)
+        job_data = JSON.parse(request.env["rack.input"].read).
+          symbolize_keys.except(:session, :captures, :splat)
+
         logger.info "Handling job: #{job_data.inspect}"
 
         job = Job.new(job_data)
