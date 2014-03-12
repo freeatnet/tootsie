@@ -127,6 +127,7 @@ Schedule a new job. Returns 201 if the job was created. The job must be posted a
 * `retries`: Maximum number of retries, if any. Defaults to 5.
 * `params`: Job-type-specific parameters.
 * `reference`: A client-supplied value (or hash of values). Tootsie ignores the contents of this value. The value will be passed as part of notifications.
+* `path`: The root path of the UID generated for each job. Optional.
 
 ### `GET /api/tootsie/v1/status`
 
