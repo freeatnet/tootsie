@@ -43,8 +43,7 @@ module Tootsie
             data = message[:payload]
             if data and data != :queue_empty
               @logger.info { "Consuming: #{data.inspect}" }
-              message = JSON.parse(data)
-              yield message
+              yield JSON.parse(data)
               with_connection do
                 @queue.ack(delivery_tag: message[:delivery_details][:delivery_tag])
               end
