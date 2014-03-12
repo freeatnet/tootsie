@@ -16,7 +16,7 @@ module Tootsie
       @retries_left = attributes[:retries] || DEFAULT_MAX_RETRIES
       @created_at = Time.now
       @notification_url = attributes[:notification_url]
-      @params = attributes[:params]
+      @params = (attributes[:params] || {}).with_indifferent_access
       @logger = Application.get.logger
       @reference = attributes[:reference]
     end
