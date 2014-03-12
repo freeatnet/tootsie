@@ -63,7 +63,9 @@ Create a YAML configuration file. Call it something like `tootsie.conf`:
     log_path: <where to write log file>
     worker_count: <number of workers>
 
-Start the job manager with `tootsie -c tootsie.conf`. (It will stay in the foreground unless you provide `-d`.)
+Start the job manager with:
+
+    $ bin/tootsie start -c tootsie.conf -p tootsie.pid --daemon
 
 To run the web service, you will need a Rack-compatible web server, such as Unicorn. To start Unicorn on port 8080:
 

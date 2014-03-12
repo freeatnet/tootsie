@@ -10,14 +10,19 @@ module Tootsie
     end
 
     def run!(arguments = [])
+      command = ARGV.shift
+      unless command
+        abort "Run with #{$0} -h for help."
+      end
+
       OptionParser.new do |opts|
-        opts.banner = "Usage: #{File.basename($0)} [OPTIONS]"
+        opts.banner = "Usage: #{File.basename($0)} [start|stop] [OPTIONS]"
         opts.separator ""
         opts.on("-d", "--daemon", 'Run as daemon') do
           @run_as_daemon = true
         end
-        opts.on("-p PATH", "--pid", "Store pid in PATH (defaults to #{@pid_path})") do |value|
-          @pid_path = File.expand_path(value)
+        opts.on("-p PATH", "--pidfile", "Store pid in PATH (defaults to #{@pidfile})") do |value|
+          @pidfile = File.expand_path(value)
         end
         opts.on("-c FILE", "--config FILE", "Read configuration from FILE (defaults to #{@config_path})") do |value|
           @config_path = File.expand_path(value)
@@ -29,16 +34,58 @@ module Tootsie
         opts.parse!(arguments)
       end
 
-      @app.configure!(@config_path)
-
-      if @run_as_daemon
-        daemonize!
-      else
-        execute!
+      case command
+        when 'start'
+          @app.configure!(@config_path)
+          if @run_as_daemon
+            daemonize!
+          else
+            execute!
+          end
+        when 'stop'
+          @app.configure!(@config_path)
+          stop!
+        else
+          abort "Don't know command #{command}."
       end
     end
 
     private
+
+      def stop!
+        stopped = false
+        begin
+          pid = File.read(pid_path).to_i
+        rescue Errno::ENOENT
+          pid = nil
+        end
+        if pid and pid != 0
+          begin
+            Process.kill('TERM', pid)
+          rescue Errno::ESRCH
+          else
+            begin
+              timeout(30) do
+                loop do
+                  begin
+                    Process.kill(0, pid)
+                  rescue Errno::ESRCH
+                    stopped = true
+                    break
+                  else
+                    sleep(1)
+                  end
+                end
+              end
+            rescue Timeout::Error
+              abort "Daemon did not stop in time."
+            end
+          end
+        end
+        unless stopped
+          puts "Daemon is not running."
+        end
+      end
 
       def execute!
         with_pid do
@@ -85,10 +132,7 @@ module Tootsie
       end
 
       def with_pid(&block)
-        path = @pid_path
-        path ||= @app.configuration.pid_path
-        path ||= '/var/run/tootsie.pid'
-
+        path = pid_path
         File.open(path, 'w') do |file|
           file << Process.pid
         end
@@ -97,6 +141,12 @@ module Tootsie
         ensure
           File.delete(path) rescue nil
         end
+      end
+
+      def pid_path
+        path = @pidfile
+        path ||= @app.configuration.pidfile
+        path ||= '/var/run/tootsie.pid'
       end
 
       def with_lifecycle_logging(prefix, &block)
