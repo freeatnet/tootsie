@@ -29,8 +29,6 @@ describe V1 do
     describe "POST #{path}" do
 
       it 'posts job on queue' do
-        queue.stub(:push) { nil }
-
         attributes = {
           type: 'image',
           notification_url: "http://example.com/transcoder_notification",
@@ -38,10 +36,17 @@ describe V1 do
           params: {}
         }
 
-        post '/jobs', JSON.dump(attributes)
+        queue.stub(:push) { nil }
+        expect(queue).to receive(:push) do |j|
+          j.class.should eq Tootsie::Job
+          j.attributes.except(:uid, :retries).should eq attributes
+          j.attributes[:uid].should =~ /^tootsie_job:dustin_hoffman(\.|\$)/
+          j.attributes.should include(:retries)
+        end
+        post '/jobs', JSON.dump(attributes.merge(
+          path: 'dustin_hoffman'
+        ))
         last_response.status.should eq 201
-
-        expect(queue).to have_received(:push).with(Job.new(attributes))
       end
 
     end

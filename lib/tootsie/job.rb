@@ -10,8 +10,9 @@ module Tootsie
     def initialize(attributes = {})
       attributes = attributes.symbolize_keys
       attributes.assert_valid_keys(
-        :type, :retries, :notification_url, :params, :reference)
+        :uid, :type, :retries, :notification_url, :params, :reference, :path)
       @type = attributes[:type].to_s
+      @uid = attributes[:uid]
       @retries_left = attributes[:retries] || DEFAULT_MAX_RETRIES
       @created_at = Time.now
       @notification_url = attributes[:notification_url]
@@ -86,7 +87,9 @@ module Tootsie
       else
         if (river = Application.get.river)
           begin
-            river.publish(message.merge(event: "tootsie_#{message[:event]}"))
+            river.publish(message.merge(
+              uid: @uid,
+              event: "tootsie_#{message[:event]}"))
           rescue => exception
             Application.get.report_exception(exception, "River notification failed with exception")
           end
@@ -104,6 +107,7 @@ module Tootsie
 
     def attributes
       return {
+        :uid => @uid,
         :type => @type,
         :notification_url => @notification_url,
         :retries => @retries_left,

@@ -23,6 +23,12 @@ module Tootsie
 
         logger.info "Handling job: #{job_data.inspect}"
 
+        path = job_data.delete(:path)
+        path ||= 'tootsie'  # Technically not a valid path, though
+
+        job_data[:uid] = "tootsie_job:#{path}$" + Time.now.strftime('%Y%m%d%H%M%S') +
+          SecureRandom.random_number(2 ** 64).to_s(36)
+
         job = Job.new(job_data)
         unless job.valid?
           halt 400, 'Invalid job specification'
