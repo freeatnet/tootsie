@@ -154,8 +154,13 @@ module Tootsie
         yield
       rescue SystemExit, Interrupt, SignalException
         logger.info("#{prefix} signaled")
-      rescue Exception => e
-        logger.error("#{prefix} failed with exception #{e.class}: #{e}")
+      rescue => e
+        if logger.respond_to?(:exception)
+          logger.exception(e)
+        else
+          logger.error("#{prefix} failed with exception #{e.class}: #{e}")
+        end
+        sleep(1)
         exit(1)
       end
 

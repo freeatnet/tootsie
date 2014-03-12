@@ -60,7 +60,7 @@ module Tootsie
     end
 
     # Report an exception.
-    def report_exception(message = nil, &block)
+    def report_exception(exception, message = nil)
       if @logger.respond_to?(:exception)
         # This allows us to plug in custom exception handling
         logger.error(message) if message
