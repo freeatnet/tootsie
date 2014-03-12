@@ -49,6 +49,22 @@ describe V1 do
         last_response.status.should eq 201
       end
 
+      it 'accepts job without a path' do
+        attributes = {
+          type: 'image',
+          notification_url: "http://example.com/transcoder_notification",
+          reference: {'meaning' => 42},
+          params: {}
+        }
+
+        queue.stub(:push) { nil }
+        expect(queue).to receive(:push) do |j|
+          j.attributes[:uid].should =~ /^tootsie_job:tootsie(\.|\$)/
+        end
+        post '/jobs', JSON.dump(attributes)
+        last_response.status.should eq 201
+      end
+
     end
   end
 
