@@ -86,7 +86,7 @@ module Tootsie
       else
         if (river = Application.get.river)
           begin
-            river.publish(message)
+            river.publish(message.merge(event: "tootsie_#{message[:event]}"))
           rescue => exception
             Application.get.report_exception(exception, "River notification failed with exception")
           end
