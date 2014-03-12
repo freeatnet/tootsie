@@ -24,7 +24,7 @@ module Tootsie
       return @type && VALID_TYPES.include?(@type)
     end
 
-    def execute!
+    def execute
       @logger.info("Begin processing job: #{attributes.inspect}")
       notify!(:event => :started)
       begin
