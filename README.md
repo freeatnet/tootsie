@@ -234,7 +234,9 @@ Completion notification provides the following data:
 
 ## Notifications
 
-Normally, Tootsie will publish notifications to an AMQP exchange called `tootsie`. Each event contains:
+Tootsie can publish notifications to AMQP as well as to webhooks.
+
+By default, Tootsie will publish notifications to an AMQP exchange called `pebblebed.river.<environment>`. Each event contains:
 
 * `event`: See below.
 * `reference`: If the job was posted with a reference value, this contains that reference.
