@@ -129,5 +129,7 @@ module Tootsie
     attr_accessor :params
     attr_accessor :type
 
+    attr_reader :uid
+
   end
 end

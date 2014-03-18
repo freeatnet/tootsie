@@ -35,7 +35,7 @@ module Tootsie
         end
         Application.get.queue.push(job)
 
-        halt 201, "Job saved."
+        halt 201, job.uid
       end
 
       get '/status' do
