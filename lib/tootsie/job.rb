@@ -50,15 +50,15 @@ module Tootsie
         notify!(:event => :failed, :reason => 'Cancelled')
         raise
       rescue => exception
-        Application.get.report_exception(exception, "Job failed with exception")
         if @retries_left > 0
           @retries_left -= 1
+          @logger.error "Job failed with exception #{exception.class}: #{e.message}, will retry"
           notify!(:event => :failed_will_retry, :reason => exception.message)
-
           sleep(1)
           @logger.info "Retrying job"
           retry
         else
+          Application.get.report_exception(exception, "Job permanently failed with exception")
           @logger.error "No more retries for job, marking as failed"
           notify!(:event => :failed, :reason => exception.message)
         end
