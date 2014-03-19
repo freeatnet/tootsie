@@ -52,7 +52,7 @@ module Tootsie
       rescue => exception
         if @retries_left > 0
           @retries_left -= 1
-          @logger.error "Job failed with exception #{exception.class}: #{e.message}, will retry"
+          @logger.error "Job failed with exception #{exception.class}: #{exception.message}, will retry"
           notify!(:event => :failed_will_retry, :reason => exception.message)
           sleep(1)
           @logger.info "Retrying job"
