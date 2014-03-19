@@ -32,8 +32,11 @@ module Tootsie
                   else
                     uri = location
                   end
-                when 404
+                when 404, 410
                   raise ResourceNotFound
+                when 502, 503, 504
+                  raise ResourceTemporarilyUnavailable,
+                    "Server returned status #{response.status} for #{uri}"
                 else
                   raise UnexpectedResponse, "Server returned status #{response.status} for #{uri}"
               end

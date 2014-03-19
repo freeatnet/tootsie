@@ -7,6 +7,7 @@ module Tootsie
     class ResourceNotFound < ResourceError; end
     class TooManyRedirects < ResourceError; end
     class UnexpectedResponse < ResourceError; end
+    class ResourceTemporarilyUnavailable < ResourceError; end
 
     # Parses an URI into a resource object. The resource object will support the
     # following methods:
