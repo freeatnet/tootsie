@@ -20,10 +20,6 @@ module Tootsie
         end
       end
       @queue_options = (config[:queue] ||= {}).symbolize_keys
-
-      # Backwards compatibility with old options
-      @queue_options[:adapter] ||= 'sqs'
-      @queue_options[:queue] ||= config[:sqs_queue_name]
     end
 
     def load_from_file(file_name)
