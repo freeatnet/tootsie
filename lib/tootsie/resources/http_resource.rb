@@ -48,6 +48,8 @@ module Tootsie
             raise ArgumentError, "Invalid mode: #{mode.inspect}"
         end
         @temp_file
+      rescue Timeout::Error, Excon::Errors::Timeout
+        raise ResourceTemporarilyUnavailable, "Timeout fetching #{uri}"
       end
 
       def close

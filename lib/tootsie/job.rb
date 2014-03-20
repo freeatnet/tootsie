@@ -52,14 +52,11 @@ module Tootsie
       rescue => exception
         if @retries_left > 0
           @retries_left -= 1
-          @logger.error "Job failed with exception #{exception.class}: #{exception.message}, will retry"
-          notify!(:event => :failed_will_retry, :reason => exception.message)
-          sleep(1)
+          temporary_failure(exception)
           @logger.info "Retrying job"
           retry
         else
-          Application.get.report_exception(exception, "Job permanently failed with exception")
-          @logger.error "No more retries for job, marking as failed"
+          permanent_failure(exception)
           notify!(:event => :failed, :reason => exception.message)
         end
       else
@@ -130,6 +127,31 @@ module Tootsie
     attr_accessor :type
 
     attr_reader :uid
+
+    private
+
+      def temporary_failure(exception)
+        logger.error "Job failed with exception #{exception.class}: #{exception.message}, will retry"
+        notify!(event: :failed_will_retry, reason: exception.message)
+        sleep(1)
+      end
+
+      def permanent_failure(exception)
+        logger.error "No more retries for job, marking as permanently failed"
+        case exception
+          when Timeout::Error, Excon::Errors::Timeout
+            logger.error("The job failed due to timeout")
+          when Resources::ResourceError
+            logger.error("The job failed due to resource: #{exception}")
+          else
+            Application.get.report_exception(exception,
+              "Job permanently failed with unexpected error")
+          end
+      end
+
+      def logger
+        @logger
+      end
 
   end
 end
