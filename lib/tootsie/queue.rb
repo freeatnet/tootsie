@@ -9,7 +9,7 @@ module Tootsie
       @logger = Application.get.logger
       @host_name = options[:host_name] || 'localhost'
       @exchange_name = options[:exchange_name] || 'tootsie'
-      @name = options[:queue_name] || 'tootsie'
+      @queue_name = options[:queue_name] || 'tootsie'
       @routing_key = 'tootsie'
     end
 
