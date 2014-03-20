@@ -4,11 +4,13 @@ module Tootsie
   class Queue
 
     def initialize(options = {})
-      options.assert_valid_keys(:host_name, :queue_name, :max_backoff)
+      options.assert_valid_keys(:host_name, :queue_name, :exchange_name, :max_backoff)
       @backoff = Utility::Backoff.new(:max => options[:max_backoff])
       @logger = Application.get.logger
       @host_name = options[:host_name] || 'localhost'
+      @exchange_name = options[:exchange_name] || 'tootsie'
       @name = options[:queue_name] || 'tootsie'
+      @routing_key = 'tootsie'
     end
 
     def count
@@ -25,7 +27,7 @@ module Tootsie
       data = message.to_json
       with_retry do
         with_connection do
-          @exchange.publish(data, persistent: true, key: @name)
+          @exchange.publish(data, persistent: true, key: @routing_key)
         end
       end
     end
@@ -91,12 +93,13 @@ module Tootsie
           end
 
           unless @exchange
-            @exchange = @connection.exchange('')
+            @exchange = @connection.exchange(@exchange_name)
           end
 
           unless @queue
-            @queue = @connection.queue(@name, :durable => true)
+            @queue = @connection.queue(@queue_name, durable: true)
           end
+          @queue.bind(@exchange_name, key: @routing_key)
         rescue Bunny::ServerDownError => e
           @logger.error "Could not connect: #{e}"
           sleep(0.5)

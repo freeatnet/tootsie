@@ -38,6 +38,7 @@ module Tootsie
       @queue = Tootsie::Queue.new(
         :host_name => queue_options[:host],
         :queue_name => queue_options[:queue],
+        :exchange_name => queue_options[:exchange],
         :max_backoff => queue_options[:max_backoff])
 
       @river = Pebblebed::River.new

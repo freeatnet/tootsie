@@ -102,6 +102,7 @@ The configuration is a YAML document with the following keys:
 * `worker_count`: Number of workers. Must be at least 1.
 * `queue`:
     * `queue`: The name of the AMQP queue, defaults to `tootsie`.
+    * `exchange`: The name of the AMQP exchange, defaults to `tootsie`.
     * `host_name`: Host name of AMQP server, defaults to `localhost`.
     * `max_backoff`: Max seconds to wait when queue is empty, defaults to 2. Note that when running a large number of workers, you should increase the backoff interval to avoid incurring a lot of queue requests.
 
