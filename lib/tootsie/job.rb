@@ -7,6 +7,8 @@ module Tootsie
 
     VALID_TYPES = %w(video audio image).freeze
 
+    class InvalidJobError < StandardError; end
+
     def initialize(attributes = {})
       attributes = attributes.symbolize_keys
       attributes.assert_valid_keys(
@@ -19,6 +21,8 @@ module Tootsie
       @params = (attributes[:params] || {}).with_indifferent_access
       @logger = Application.get.logger
       @reference = attributes[:reference]
+    rescue ArgumentError => e
+      raise InvalidJobError, e.message
     end
 
     def valid?

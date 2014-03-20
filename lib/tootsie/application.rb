@@ -46,7 +46,13 @@ module Tootsie
     def process_jobs
       loop do
         @queue.consume do |message|
-          Job.from_json(message).execute
+          begin
+            job = Job.from_json(message)
+          rescue InvalidJobError => e
+            report_exception(e, 'Invalid job')
+          else
+            job.execute
+          end
         end
       end
     end
