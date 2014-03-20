@@ -93,7 +93,8 @@ module Tootsie
           end
 
           unless @exchange
-            @exchange = @connection.exchange(@exchange_name)
+            @exchange = @connection.exchange(@exchange_name,
+              type: :topic, durable: true)
           end
 
           unless @queue
