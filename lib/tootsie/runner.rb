@@ -10,13 +10,14 @@ module Tootsie
     end
 
     def run!(arguments = [])
-      command = ARGV.shift
-      unless command
-        abort "Run with #{$0} -h for help."
-      end
+      # Backwards compatibility
+      command = arguments.shift if %w(start stop).include?(arguments[0])
 
       OptionParser.new do |opts|
-        opts.banner = "Usage: #{File.basename($0)} [start|stop] [OPTIONS]"
+        opts.banner = %{\
+Usage: #{File.basename($0)} [OPTIONS] start
+       #{File.basename($0)} [OPTIONS] stop
+}
         opts.separator ""
         opts.on("-d", "--daemon", 'Run as daemon') do
           @run_as_daemon = true
@@ -31,9 +32,13 @@ module Tootsie
           puts opts
           exit
         end
-        opts.parse!(arguments)
+        opts.order!(arguments) { |v| opts.terminate(v) }
       end
 
+      command ||= arguments.shift
+      unless command
+        abort "Run with #{$0} -h for help."
+      end
       case command
         when 'start'
           @app.configure!(@config_path)
