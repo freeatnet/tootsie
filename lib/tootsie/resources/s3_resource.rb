@@ -50,7 +50,7 @@ module Tootsie
           object.content = @temp_file
           object.save
         rescue ::S3::Error::NoSuchBucket
-          raise ResourceNotFound, "Bucket #{bucket_name} not found"
+          raise ResourceNotFound, "Bucket #{@options[:bucket].inspect} not found"
         end
         close
       end
