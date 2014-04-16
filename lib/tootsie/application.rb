@@ -41,7 +41,7 @@ module Tootsie
         :exchange_name => queue_options[:exchange],
         :max_backoff => queue_options[:max_backoff])
 
-      @river = Pebblebed::River.new
+      @river = Pebbles::River::River.new
     end
 
     def process_jobs
