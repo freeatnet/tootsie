@@ -48,7 +48,6 @@ Usage: #{File.basename($0)} [OPTIONS] start
             execute!
           end
         when 'stop'
-          @app.configure!(@config_path)
           stop!
         else
           abort "Don't know command #{command}."
