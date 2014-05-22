@@ -14,7 +14,7 @@ gem 'i18n', '>= 0.4'
 gem 'scashin133-syslog_logger', '~> 1.7'
 gem 'pebblebed', '~> 0.1'
 gem 'nokogiri', '~> 1.6.1'
-gem 'pebbles-river', '~> 0.0.2'
+gem 'pebbles-river', '~> 0.0.5'
 
 # These are included for convenience, allowing Tootsie to report to these services.
 gem 'airbrake', '~> 3.1'

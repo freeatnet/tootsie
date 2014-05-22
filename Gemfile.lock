@@ -97,7 +97,7 @@ DEPENDENCIES
   mime-types (~> 1.16)
   nokogiri (~> 1.6.1)
   pebblebed (~> 0.1)
-  pebbles-river (~> 0.0.2)
+  pebbles-river (~> 0.0.5)
   rack-test
   rake
   rollbar (~> 0.12)
