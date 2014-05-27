@@ -53,7 +53,7 @@ Installation
 Running
 -------
 
-Create a YAML configuration file. Call it something like `tootsie.conf`:
+First, create a YAML configuration file and put it in `config/tootsie.conf` (for example):
 
     queue:
       queue: tootsie
@@ -65,7 +65,7 @@ Create a YAML configuration file. Call it something like `tootsie.conf`:
 
 Start the job manager with:
 
-    $ bin/tootsie start -c tootsie.conf -p tootsie.pid --daemon
+    $ bin/tootsie start -p tootsie.pid --daemon
 
 To run the web service, you will need a Rack-compatible web server, such as Unicorn. To start Unicorn on port 8080:
 
@@ -105,6 +105,14 @@ The configuration is a YAML document with the following keys:
     * `exchange`: The name of the AMQP exchange, defaults to `tootsie`.
     * `host_name`: Host name of AMQP server, defaults to `localhost`.
     * `max_backoff`: Max seconds to wait when queue is empty, defaults to 2. Note that when running a large number of workers, you should increase the backoff interval to avoid incurring a lot of queue requests.
+
+The configuration file is searched for in the following location:
+
+* A path set in `TOOTSIE_CONFIG`.
+* `config/tootsie.conf` relative to the project
+* `/etc/tootsie/tootsie.conf`.
+
+Additionally, `bin/tootsie` supports overriding the location with `-c`.
 
 ### Exception notification
 
