@@ -80,7 +80,7 @@ Jobs may now be posted to the web service API. For example:
       "params": {
         "input_url": "http://example.com/test.3gp",
         "versions": {
-          "target_url": "s3:mybucket/test.mp4?acl=public_read",
+          "target_url": "s3:mybucket/test.mp4?acl=public-read",
           "audio_sample_rate": 44100,
           "audio_bitrate": 64000,
           "format": "flv",
