@@ -1,13 +1,15 @@
 module Tootsie
   module Resources
 
-    class ResourceError < StandardError; end
-    class UnsupportedResourceTypeError < ResourceError; end
-    class InvalidUriError < ResourceError; end
-    class ResourceNotFound < ResourceError; end
-    class TooManyRedirects < ResourceError; end
-    class UnexpectedResponse < ResourceError; end
-    class ResourceTemporarilyUnavailable < ResourceError; end
+    class PermanentError < StandardError; end
+    class UnsupportedResourceTypeError < PermanentError; end
+    class InvalidUriError < PermanentError; end
+    class ResourceNotFound < PermanentError; end
+    class TooManyRedirects < PermanentError; end
+
+    class TemporaryError < StandardError; end
+    class ResourceTemporarilyUnavailable < TemporaryError; end
+    class UnexpectedResponse < TemporaryError; end
 
     # Parses an URI into a resource object. The resource object will support the
     # following methods:
@@ -29,6 +31,8 @@ module Tootsie
           HttpResource.new(uri)
         when 's3'
           S3Resource.new(uri.to_s)
+        when nil
+          raise InvalidUriError, "Resource URI cannot be nil"
         else
           raise UnsupportedResourceTypeError, "Unsupported resource: #{uri.inspect}"
       end

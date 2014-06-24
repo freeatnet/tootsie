@@ -31,10 +31,18 @@ describe Resources do
 
   describe 'Parser' do
     it 'raises error on unsupported URI' do
-      ["xyz", nil, "", "ftp://example.com/"].each do |uri|
+      ["ftp://example.com/", "gopher://example.com/"].each do |uri|
         lambda {
           Resources.parse_uri(uri)
         }.should raise_error(Resources::UnsupportedResourceTypeError)
+      end
+    end
+
+    it 'raises error on unsupported URI' do
+      ["xyz", "", nil].each do |uri|
+        lambda {
+          Resources.parse_uri(uri)
+        }.should raise_error(Resources::InvalidUriError)
       end
     end
   end

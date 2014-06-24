@@ -54,7 +54,7 @@ module Tootsie
         notify!(:event => :failed, :reason => 'Cancelled')
         raise
       rescue => exception
-        if @retries_left > 0
+        if @retries_left > 0 and retriable?(exception)
           @retries_left -= 1
           temporary_failure(exception)
           @logger.info "Retrying job"
@@ -133,6 +133,15 @@ module Tootsie
     attr_reader :uid
 
     private
+
+      PERMANENT_EXCEPTIONS = [
+        Resources::PermanentError,
+        InvalidJobError,
+      ].freeze
+
+      def retriable?(exception)
+        !PERMANENT_EXCEPTIONS.any? { |e| exception.is_a?(e) }
+      end
 
       def temporary_failure(exception)
         logger.error "Job failed with exception #{exception.class}: #{exception.message}, will retry"
