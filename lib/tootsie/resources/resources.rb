@@ -1,13 +1,15 @@
 module Tootsie
   module Resources
 
-    class PermanentError < StandardError; end
+    class ResourceError < StandardError; end
+
+    class PermanentError < ResourceError; end
     class UnsupportedResourceTypeError < PermanentError; end
     class InvalidUriError < PermanentError; end
     class ResourceNotFound < PermanentError; end
     class TooManyRedirects < PermanentError; end
 
-    class TemporaryError < StandardError; end
+    class TemporaryError < ResourceError; end
     class ResourceTemporarilyUnavailable < TemporaryError; end
     class UnexpectedResponse < TemporaryError; end
 
