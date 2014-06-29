@@ -35,19 +35,23 @@ module Tootsie
     def consume(&block)
       loop do
         @backoff.with do
-          message = nil
-          with_retry do
-            with_connection do
-              message = @queue.pop(ack: true)
-            end
-          end
-          if message
-            data = message[:payload]
-            if data and data != :queue_empty
-              @logger.info { "Consuming: #{data.inspect}" }
-              yield JSON.parse(data)
+          delivery_info, metadata, payload = with_retry {
+            with_connection {
+              @queue.pop(ack: true)
+            }
+          }
+          if payload
+            @logger.info { "Consuming: #{payload.inspect}" }
+            begin
+              yield JSON.parse(payload)
+            rescue => e
               with_connection do
-                @queue.ack(delivery_tag: message[:delivery_details][:delivery_tag])
+                @queue.channel.nack(delivery_info.delivery_tag, false, true)
+              end
+              raise e
+            else
+              with_connection do
+                @queue.channel.ack(delivery_info.delivery_tag)
               end
             end
           end
@@ -86,19 +90,21 @@ module Tootsie
 
       def connect!
         begin
-          unless @connection
+          unless @session
             @logger.info "Connecting to AMQP server on #{@host_name}"
-            @connection = Bunny.new(:host => @host_name)
-            @connection.start
+            @session = Bunny.new(:host => @host_name)
+            @session.start
+
+            @channel = @session.create_channel
           end
 
           unless @exchange
-            @exchange = @connection.exchange(@exchange_name,
+            @exchange = @session.exchange(@exchange_name,
               type: :topic, durable: true)
           end
 
           unless @queue
-            @queue = @connection.queue(@queue_name, durable: true)
+            @queue = @session.queue(@queue_name, durable: true)
           end
           @queue.bind(@exchange_name, key: @routing_key)
         rescue Bunny::ServerDownError => e
@@ -109,12 +115,13 @@ module Tootsie
       end
 
       def reset_connection
-        if @connection
-          @connection.close rescue nil
-          @connection = nil
-        end
+        @channel = nil
         @queue = nil
         @exchange = nil
+        if @session
+          @session.close rescue nil
+          @session = nil
+        end
       end
 
   end
