@@ -50,6 +50,8 @@ module Tootsie
         @temp_file
       rescue Timeout::Error, Excon::Errors::Timeout
         raise ResourceTemporarilyUnavailable, "Timeout fetching #{uri}"
+      rescue Excon::Errors::SocketError => e
+        raise ResourceTemporarilyUnavailable, "Socket error fetching #{uri}: #{e.class}: #{e}"
       end
 
       def close
