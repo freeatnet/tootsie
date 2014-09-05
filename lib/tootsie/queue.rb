@@ -54,6 +54,9 @@ module Tootsie
                 @queue.channel.ack(delivery_info.delivery_tag)
               end
             end
+            true
+          else
+            false
           end
         end
       end
