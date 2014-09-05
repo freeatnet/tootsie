@@ -34,6 +34,15 @@ module Tootsie
                   end
                 when 404, 410
                   raise ResourceNotFound
+                when 503
+                  # According to HTTP spec, we should only retry if this header is present
+                  if response.headers['Retry-After']
+                    raise ResourceTemporarilyUnavailable,
+                      "Server returned status #{response.status} for #{uri}"
+                  else
+                    raise ResourceUnavailable,
+                      "Server returned status #{response.status} for #{uri}"
+                  end
                 when 502, 503, 504
                   raise ResourceTemporarilyUnavailable,
                     "Server returned status #{response.status} for #{uri}"
