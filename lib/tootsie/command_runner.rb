@@ -4,11 +4,13 @@ module Tootsie
 
   class CommandRunner
 
+    include PrefixedLogging
+
     def initialize(command_line, options = {})
       @options = options.symbolize_keys
       @options.assert_valid_keys(:ignore_exit_code, :output_encoding)
       @command_line = command_line
-      @logger = Application.get.logger
+      @command = command_line.split.first
     end
 
     def run(params = {}, &block)
@@ -28,12 +30,12 @@ module Tootsie
       end
       command_line = "#{command_line} 2>&1"
 
-      @logger.info("Running command: #{command_line}") if @logger.info?
+      logger.info("Running: #{command_line}") if logger.info?
       elapsed_time = Benchmark.realtime {
         IO.popen(command_line, "r:#{@options[:output_encoding] || 'utf-8'}") do |output|
           output.each_line do |line|
             line.split(/\r/).each do |linepart|
-              @logger.info("[Command output] #{linepart.strip}") if @logger.info?
+              logger.info("--> #{linepart.strip}") if logger.info?
               yield linepart if block_given?
             end
           end
@@ -49,7 +51,7 @@ module Tootsie
             raise CommandExecutionFailed, "Command failed with exit code #{status.exitstatus}: #{command_line}"
           end
         end
-        @logger.info "Command took #{'%.3f' % elapsed_time} seconds"
+        logger.info "Finished in #{elapsed_time.round(3)} secs"
       elsif status.stopped?
         raise CommandExecutionFailed, "Command stopped unexpectedly with signal #{status.stopsig}: #{command_line}"
       elsif status.signaled?
@@ -59,6 +61,12 @@ module Tootsie
       end
       true
     end
+
+    protected
+
+      def logger_prefix
+        "#{super} (#{@command})"
+      end
 
   end
 end

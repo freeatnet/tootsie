@@ -53,15 +53,10 @@ Installation
 Running
 -------
 
-First, create a YAML configuration file and put it in `config/tootsie.conf` (for example):
+First, create a YAML configuration file and put it in `config/tootsie.conf`:
 
-    queue:
-      queue: tootsie
     aws_access_key_id: <your Amazon key>
     aws_secret_access_key: <your Amazon secret>
-    pid_path: <where to write pid file>
-    log_path: <where to write log file>
-    worker_count: <number of workers>
 
 Start the job manager with:
 
@@ -93,26 +88,22 @@ Jobs may now be posted to the web service API. For example:
 Configuration
 -------------
 
-The configuration is a YAML document with the following keys:
+The configuration `config/tootsie.conf` is a YAML document with the following keys:
 
 * `aws_access_key_id`: Your Amazon key.
 * `aws_secret_access_key`: Your Amazon secret.
-* `pid_path`: Where to write pid file.
-* `log_path`: Where to write log file.
-* `worker_count`: Number of workers. Must be at least 1.
-* `queue`:
-    * `queue`: The name of the AMQP queue, defaults to `tootsie`.
-    * `exchange`: The name of the AMQP exchange, defaults to `tootsie`.
-    * `host_name`: Host name of AMQP server, defaults to `localhost`.
-    * `max_backoff`: Max seconds to wait when queue is empty, defaults to 2. Note that when running a large number of workers, you should increase the backoff interval to avoid incurring a lot of queue requests.
+* `create_failure_queue`: If true, a queue is automatically created that is bound to the exchange with a routing key such that any permanently failed jobs end up here. This queue can be used to inspect failures and requeue them.
+* `failure_queue_ttl`: If set, the failure queue will be created with this TTL setting (requires RabbitMQ). Unlike RabbitMQ, this specifies the timeout in _seconds_.
+* `use_legacy_completion_event`: If true, use the event type `tootsie_completed` instead of `tootsie.completed`.
 
-The configuration file is searched for in the following location:
+### Old settings no longer supported
 
-* A path set in `TOOTSIE_CONFIG`.
-* `config/tootsie.conf` relative to the project
-* `/etc/tootsie/tootsie.conf`.
+* `pid_path`: Specify with `tootsie --pidfile`.
+* `log_path`: Override this by assigning `LOGGER` in your `config/site.rb`.
+* `worker_count`: Specify with `tootsie --workers`.
+* `queue`: The queue is always named `tootsie`. The host is always `localhost`. (The ability to override this is something we'll add back.)
 
-Additionally, `bin/tootsie` supports overriding the location with `-c`.
+Additionally, `bin/tootsie` no longer supports overriding the configuration location with `-c`.
 
 ### Exception notification
 
@@ -243,25 +234,29 @@ Completion notification provides the following data:
 
 ## Notifications
 
-Tootsie can publish notifications to AMQP as well as to webhooks.
+Tootsie will publish notifications to AMQP. It also supports a webhook.
 
 By default, Tootsie will publish notifications to an AMQP exchange called `pebblebed.river.<environment>`. Each event contains:
 
 * `event`: See below.
+* `uid`: The unique ID of the job.
 * `reference`: If the job was posted with a reference value, this contains that reference.
 * `time_taken`: See below.
 * `reason`: See below.
 
 In addition, job-specific data is added to the event. See the different job types for information about those keys.
 
-Types of events:
+The event type is also used as the routing key, prefixed with `tootsie.`. This allows clients to listen to specific events. Types of events:
 
 * `started`: The job was started.
-* `complete`: The job was complete. The key `time_taken` will contain the time taken for the job, in seconds. Additional data will be provided that are specific to the type of job.
+* `completed`: The job was complete. The key `time_taken` will contain the time taken for the job, in seconds. Additional data will be provided that are specific to the type of job.
+* `progress`: The job was progressing. Sent every 30s.
 * `failed`: The job failed. The key `reason` will contain a textual explanation for the failure.
 * `failed_will_retry`: The job failed, but is being rescheduled for retrying. The key `reason` will contain a textual explanation for the failure.
 
 If a notification webhook URL is provided in original job request, events will instead be sent to that URL using `POST` requests as JSON data. These are 'fire and forget' and will not be retried on failure, and the response status code is ignored.
+
+Previous versions would publish the AMQP event `tootsie_completed`. To continue using this event, set `use_legacy_completion_event: true` in the configuration file.
 
 ## Resource URLs
 

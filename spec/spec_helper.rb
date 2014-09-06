@@ -15,11 +15,10 @@ SimpleCov.add_filter 'spec'
 SimpleCov.add_filter 'config'
 SimpleCov.start
 
-$LOAD_PATH.unshift(File.join(File.dirname(__FILE__), '..', 'lib'))
-require 'tootsie'
+require_relative '../config/environment'
+require_relative '../api/v1'
 
 require 'rspec'
-require 'rspec/autorun'
 require 'rack/test'
 require 'webmock/rspec'
 require 'pp'
@@ -29,9 +28,6 @@ $LOAD_PATH.unshift(File.dirname(__FILE__))
 Dir.glob(File.expand_path('../helpers/*.rb', __FILE__)).each do |f|
   require f
 end
-
-# Ensure application exists
-Tootsie::Application.new
 
 # Enable to get Webmock debug output during tests
 if false

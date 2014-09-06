@@ -7,15 +7,34 @@ require 'rubygems'
 require 'bundler'
 Bundler.require(:default, environment.to_sym)
 
+require 'singleton'
+require 'active_support/core_ext/hash'
+require 'fileutils'
+require 'syslog_logger'
+require 's3'
+require 'yaml'
+require 'optparse'
+require 'json'
+require 'set'
+require 'timeout'
+require 'time'
+require 'pebblebed/sinatra'
+require 'pebbles/river'
+require 'excon'
+require 'tempfile'
+require 'uri'
+require 'benchmark'
+
 $LOAD_PATH.unshift(File.expand_path('../../lib', __FILE__))
 require 'tootsie'
 
-config_paths = [
-  ENV['TOOTSIE_CONFIG'],
-  File.expand_path("../../config/tootsie.conf", __FILE__),
-  '/etc/tootsie/tootsie.conf'
-].compact
+config_path = File.expand_path("../tootsie.conf", __FILE__)
+if File.exist?(config_path)
+  Tootsie::Configuration.instance.load_from_file(config_path)
+end
 
-if (path = config_paths.select(&File.method(:exist?)).first)
-  Tootsie::Application.configure!(path)
+unless defined?(LOGGER)
+  $stdout.sync = true
+  LOGGER = Logger.new($stdout)
+  LOGGER.level = $DEBUG ? Logger::DEBUG : Logger::INFO
 end

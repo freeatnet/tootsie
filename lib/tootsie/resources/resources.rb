@@ -9,6 +9,7 @@ module Tootsie
     class ResourceNotFound < PermanentError; end
     class TooManyRedirects < PermanentError; end
     class ResourceUnavailable < PermanentError; end
+    class ResourceEmpty < PermanentError; end
 
     class TemporaryError < ResourceError; end
     class ResourceTemporarilyUnavailable < TemporaryError; end

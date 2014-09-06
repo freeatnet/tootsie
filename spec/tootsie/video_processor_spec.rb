@@ -9,12 +9,12 @@ describe VideoProcessor do
 
   it "performs basic ffmpeg transcoding" do
     stub_request(:get, "http://example.com/video.mp4").
-      to_return(:status => 200, :body => '')
+      to_return(:status => 200, :body => 'garblegarblegarble')
 
-    FfmpegAdapter.any_instance.should_receive(:transcode).with(
-      kind_of(String), kind_of(String), kind_of(Hash)).once
-    FfmpegAdapter.any_instance.stub(:transcode) { |in_path, out_path, adapter_options|
-      adapter_options.should include(
+    expect_any_instance_of(FfmpegAdapter).to receive(:transcode).
+      with(kind_of(String), kind_of(String), kind_of(Hash)).
+      once { |_, in_path, out_path, adapter_options|
+      expect(adapter_options).to include(
         :audio_sample_rate => 44100,
         :audio_bitrate => 64000,
         :format => "flv",
@@ -31,7 +31,7 @@ describe VideoProcessor do
       with(
         :headers => {'Content-Type' => 'video/x-flv'},
         :body => 'DATA').
-      to_return(:status => 200, :body => '')
+      to_return(:status => 200, :body => 'garblegarblegarble')
 
     VideoProcessor.new(
       :input_url => "http://example.com/video.mp4",

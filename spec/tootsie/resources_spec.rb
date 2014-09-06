@@ -7,10 +7,8 @@ include Tootsie
 
 describe Resources do
 
-  let! :application do
-    Tootsie::Application.configure!(
-      :log_path => '/dev/null',
-      :queue => {:queue => "test", :adapter => 'null'},
+  before :each do
+    Configuration.instance.update(
       :aws_access_key_id => "KEY",
       :aws_secret_access_key => "SECRET")
   end

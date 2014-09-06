@@ -2,19 +2,18 @@ source 'https://rubygems.org/'
 
 gem 'json', '~> 1.7'
 gem 'sinatra', '~> 1.2'
-gem 'activesupport', '~> 3.2.0'
+gem 'activesupport', '~> 4.0'
 gem 'excon', '~> 0.19'
 gem 'builder', '~> 2.1'
 gem 'mime-types', '~> 1.16'
 gem 'xml-simple', '~> 1.0'
 gem 's3', '= 0.3.8'  # Later versions are broken
-gem 'bunny', '~> 1.3.0'
-gem 'unicorn', '~> 4.1'
+gem 'unicorn', '~> 4.8.3'
 gem 'i18n', '>= 0.4'
 gem 'scashin133-syslog_logger', '~> 1.7'
-gem 'pebblebed', '~> 0.2.1'
 gem 'nokogiri', '~> 1.6.1'
-gem 'pebbles-river', '~> 0.1.1'
+gem 'pebblebed'
+gem 'pebbles-river', '~> 0.1.6'
 
 # These are included for convenience, allowing Tootsie to report to these services.
 gem 'airbrake', '~> 3.1'

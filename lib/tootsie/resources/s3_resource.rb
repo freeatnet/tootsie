@@ -1,7 +1,11 @@
+require 'benchmark'
+
 module Tootsie
   module Resources
 
     class S3Resource
+
+      include PrefixedLogging
 
       def initialize(uri)
         @uri = uri
@@ -13,7 +17,7 @@ module Tootsie
         case mode
           when 'r'
             begin
-              object = Tootsie::Application.get.s3_service.buckets.
+              object = s3.buckets.
                 find(@options[:bucket]).objects.find(@options[:key])
               object.send(:get_object) unless object.content  # Work around issue with s3 gem
 
@@ -42,13 +46,20 @@ module Tootsie
         return unless @temp_file
         begin
           @temp_file.seek(0)
-          object = Tootsie::Application.get.s3_service.buckets.
-            find(@options[:bucket]).objects.build(@options[:key])
-          object.acl = @options[:acl] || :private
-          object.content_type = @options[:content_type] || @content_type
-          object.storage_class = @options[:storage_class] || :standard
-          object.content = @temp_file
-          object.save
+
+          logger.info "Uploading to #{@uri} (#{@temp_file.size} bytes)"
+
+          elapsed_time = Benchmark.realtime {
+            object = s3.buckets.
+              find(@options[:bucket]).objects.build(@options[:key])
+            object.acl = @options[:acl] || :private
+            object.content_type = @options[:content_type] || @content_type
+            object.storage_class = @options[:storage_class] || :standard
+            object.content = @temp_file
+            object.save
+          }
+
+          logger.info "Upload took #{elapsed_time.round(3)} seconds"
         rescue ::S3::Error::NoSuchBucket
           raise ResourceNotFound, "Bucket #{@options[:bucket].inspect} not found"
         end
@@ -56,7 +67,7 @@ module Tootsie
       end
 
       def public_url
-        Tootsie::Application.get.s3_service.buckets.
+        s3.buckets.
           find(@options[:bucket]).objects.find(@options[:key]).url
       end
 
@@ -69,6 +80,12 @@ module Tootsie
       end
 
       attr_accessor :content_type
+
+      private
+
+        def s3
+          @s3 ||= Tootsie::Configuration.instance.s3_service
+        end
 
     end
 

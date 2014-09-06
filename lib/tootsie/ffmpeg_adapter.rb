@@ -4,8 +4,9 @@ module Tootsie
 
   class FfmpegAdapter
 
+    include PrefixedLogging
+
     def initialize(options = {})
-      @logger = Application.get.logger
       @ffmpeg_binary = 'ffmpeg'
       @ffmpeg_arguments = {}
       @ffmpeg_arguments['threads'] = (options[:thread_count] || 1)
@@ -95,10 +96,10 @@ module Tootsie
       if error_count > 0
         if stream_count == 1 and expected_duration and final_duration
           if expected_duration.floor == final_duration.floor
-            @logger.warn "ffmpeg exited with error, but seems to have written complete stream."
+            logger.warn "ffmpeg exited with error, but seems to have written complete stream."
           else
             if final_duration >= expected_duration - 1  # 1 second margin
-              @logger.warn "ffmpeg exited with error, but seems to have written nearly complete stream. Good enough."
+              logger.warn "ffmpeg exited with error, but seems to have written nearly complete stream. Good enough."
             else
               raise FfmpegError, "ffmpeg failed with incomplete stream"
             end
@@ -117,7 +118,7 @@ module Tootsie
         end
         at_seconds = thumbnail_options[:at_seconds].try(:to_f)
         at_seconds ||= (expected_duration || 0) * (thumbnail_options[:at_fraction].try(:to_f) || 0.5)
-        @logger.info("Getting thumbnail frame (#{thumb_width}x#{thumb_height}) with FFmpeg at #{at_seconds} seconds")
+        logger.info("Getting thumbnail frame (#{thumb_width}x#{thumb_height}) with FFmpeg at #{at_seconds} seconds")
         begin
           run_ffmpeg(input_filename, thumbnail_options[:filename], @ffmpeg_arguments.merge(
             :ss => at_seconds,
@@ -127,7 +128,7 @@ module Tootsie
             :f => :rawvideo,
             :s => "#{thumb_width}x#{thumb_height}"))
         rescue CommandExecutionFailed => e
-          @logger.error("Thumbnail rendering failed, ignoring: #{e}")
+          logger.error("Thumbnail rendering failed, ignoring: #{e}")
         end
       end
     end

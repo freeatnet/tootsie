@@ -2,4 +2,18 @@
 
 require_relative '../config/environment'
 
-Tootsie::Runner.new.run!(ARGV)
+adapter = Class.new do
+  def configure_start_command(command)
+  end
+
+  def on_start(options, helper)
+  end
+
+  def configure_supervisor(supervisor)
+    supervisor.add_listener(Tootsie::Worker.new,
+      name: 'tootsie',
+      event: 'tootsie.job')
+  end
+end.new
+
+Pebbles::River::DaemonHelper.run(adapter, logger: LOGGER)

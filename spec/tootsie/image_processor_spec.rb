@@ -17,9 +17,8 @@ describe ImageProcessor do
 
   describe 'metadata' do
     before do
-      Tootsie::Exiv2MetadataExtractor.any_instance.should_receive(:extract_from_file)
-      Tootsie::Exiv2MetadataExtractor.any_instance.stub(:extract_from_file) { |file_name|
-        file_name.should == test_file_path("iptc_xmp.jpeg")
+      expect_any_instance_of(Tootsie::Exiv2MetadataExtractor).to receive(:extract_from_file).
+        with(test_file_path('iptc_xmp.jpeg')).exactly(1).times { |_|
         {'Exif.Image.XResolution' => 666}
       }
     end

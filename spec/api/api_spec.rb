@@ -11,18 +11,10 @@ describe V1 do
     V1
   end
 
-  let! :application do
-    app = Tootsie::Application.get
-    app.configure!(
-      log_path: '/dev/null',
-      queue: {queue: "test"},
+  before :each do
+    Tootsie::Configuration.instance.update(
       aws_access_key_id: "KEY",
       aws_secret_access_key: "SECRET")
-    app
-  end
-
-  let :queue do
-    application.queue
   end
 
   ["/jobs", "/job"].each do |path|
@@ -36,12 +28,13 @@ describe V1 do
           params: {}
         }
 
-        queue.stub(:push) { nil }
-        expect(queue).to receive(:push) do |j|
-          j.class.should eq Tootsie::Job
-          j.attributes.except(:uid, :retries).should eq attributes
-          j.attributes[:uid].should =~ /^tootsie_job:dustin_hoffman(\.|\$)/
-          j.attributes.should include(:retries)
+        expect(Configuration.instance.river).to receive(:publish) do |event|
+          expect(event[:uid]).to match /^tootsie\.job:dustin_hoffman\$/
+          expect(event[:type]).to eq 'image'
+          expect(event[:event]).to eq 'tootsie.job'
+          expect(event[:reference]).to eq({'meaning' => 42})
+          expect(event[:params]).to eq({})
+          expect(event[:notification_url]).to eq "http://example.com/transcoder_notification"
         end
         post '/jobs', JSON.dump(attributes.merge(
           path: 'dustin_hoffman'
@@ -49,7 +42,7 @@ describe V1 do
         last_response.status.should eq 201
       end
 
-      it 'accepts job without a path' do
+      it 'accepts job without a path, defaults to "tootsie"' do
         attributes = {
           type: 'image',
           notification_url: "http://example.com/transcoder_notification",
@@ -57,27 +50,14 @@ describe V1 do
           params: {}
         }
 
-        queue.stub(:push) { nil }
-        expect(queue).to receive(:push) do |j|
-          j.attributes[:uid].should =~ /^tootsie_job:tootsie(\.|\$)/
+        expect(Configuration.instance.river).to receive(:publish) do |event|
+          expect(event[:uid]).to match /^tootsie\.job:tootsie\$/
         end
         post '/jobs', JSON.dump(attributes)
         last_response.status.should eq 201
       end
 
     end
-  end
-
-  describe "GET /status" do
-
-    it 'returns a status hash with queue length' do
-      queue.stub(:count) { 42 }
-
-      get '/status'
-      last_response.status.should eq 200
-      JSON.parse(last_response.body).should eq({"queue_count" => 42})
-    end
-
   end
 
 end

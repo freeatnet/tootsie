@@ -1,9 +1,9 @@
 module Tootsie
   class Job
 
-    DEFAULT_MAX_RETRIES = 5
+    include PrefixedLogging
 
-    PROGRESS_NOTIFICATION_INTERVAL = 10.seconds
+    DEFAULT_MAX_RETRIES = 5
 
     VALID_TYPES = %w(video audio image).freeze
 
@@ -12,158 +12,91 @@ module Tootsie
     def initialize(attributes = {})
       attributes = attributes.symbolize_keys
       attributes.assert_valid_keys(
-        :uid, :type, :retries, :notification_url, :params, :reference, :path)
-      @type = attributes[:type].to_s
+        :uid, :type, :retries, :notification_url, :params, :reference)
+
+      @type = attributes[:type].try(:to_s)
       @uid = attributes[:uid]
       @retries_left = attributes[:retries] || DEFAULT_MAX_RETRIES
-      @created_at = Time.now
+      @created_at = attributes[:created_at] || Time.now
+      @created_at = Time.parse(@created_at) if @created_at.is_a?(String)
       @notification_url = attributes[:notification_url]
       @params = (attributes[:params] || {}).with_indifferent_access
-      @logger = Application.get.logger
       @reference = attributes[:reference]
     rescue ArgumentError => e
       raise InvalidJobError, e.message
     end
 
+    def publish
+      Configuration.instance.river.publish(
+        uid: @uid,
+        event: 'tootsie.job',
+        type: @type,
+        notification_url: @notification_url,
+        retries: @retries_left,
+        reference: @reference,
+        params: @params)
+    end
+
     def valid?
-      return @type && VALID_TYPES.include?(@type)
+      @uid && @type && VALID_TYPES.include?(@type)
     end
 
-    def execute
-      @logger.info("Begin processing job: #{attributes.inspect}")
-      notify!(:event => :started)
-      begin
-        result = nil
-        elapsed_time = Benchmark.realtime {
-          next_notify = Time.now + PROGRESS_NOTIFICATION_INTERVAL
-          processor = Processors.const_get("#{@type.camelcase}Processor").new(@params)
-          result = processor.execute! { |progress_data|
-            if Time.now >= next_notify
-              notify!(progress_data.merge(:event => :progress))
-              next_notify = Time.now + PROGRESS_NOTIFICATION_INTERVAL
-            end
-          }
-        }
-        result ||= {}
-        notify!({
-          :event => :completed,
-          :time_taken => elapsed_time
-        }.merge(result))
-      rescue Interrupt
-        @logger.error "Job interrupted"
-        notify!(:event => :failed, :reason => 'Cancelled')
-        raise
-      rescue => exception
-        if @retries_left > 0 and retriable?(exception)
-          @retries_left -= 1
-          temporary_failure(exception)
-          @logger.info "Retrying job"
-          retry
-        else
-          permanent_failure(exception)
-          notify!(:event => :failed, :reason => exception.message)
-        end
-      else
-        @logger.info "Completed job #{attributes.inspect}"
-      end
-    end
-
-    # Notify the caller of this job with some message.
-    def notify!(message)
-      message = message.merge(reference: @reference) if @reference
+    def notify(what, data = {})
+      event = {
+        uid: @uid,
+        event: "tootsie.#{what}"
+      }
+      event.merge!(data)
+      event[:reference] = @reference if @reference
+      event[:type] = @type
+      event[:params] = @params
 
       notification_url = @notification_url
       if notification_url
-        message_json = message.stringify_keys.to_json
+        event_json = event.to_json
 
-        # TODO: Retry on failure
-        @logger.info { "Notifying #{notification_url} with message: #{message_json}" }
+        logger.info { "Notifying #{notification_url} with event: #{event_json}" }
         begin
           Excon.post(notification_url,
-            :body => message_json,
+            :body => event_json,
             :headers => {'Content-Type' => 'application/json; charset=utf-8'})
         rescue => exception
-          Application.get.report_exception(exception, "Notification failed with exception")
+          Configuration.instance.report_exception(exception,
+            "Notification to #{notification_url} failed with exception")
         end
       else
-        if (river = Application.get.river)
-          begin
-            river.publish(message.merge(
-              uid: @uid,
-              event: "tootsie_#{message[:event]}"))
-          rescue => exception
-            Application.get.report_exception(exception, "River notification failed with exception")
-          end
+        if event == :completed and Configuration.instance.use_legacy_completion_event
+          event[:event] = 'tootsie_completed'
         end
+        Configuration.instance.river.publish(event)
       end
     end
 
     def eql?(other)
+      other.is_a?(Job) &&
+        other.created_at == @created_at &&
+        other.notification == @notification &&
+        other.params == @params &&
+        other.reference == @reference &&
+        other.type == @type &&
+        other.uid == @uid
       attributes == other.attributes
     end
+    alias_method :==, :eql?
 
-    def ==(other)
-      other.is_a?(Job) && eql?(other)
-    end
+    attr_accessor :retries_left
 
-    def attributes
-      return {
-        :uid => @uid,
-        :type => @type,
-        :notification_url => @notification_url,
-        :retries => @retries_left,
-        :reference => @reference,
-        :params => @params
-      }
-    end
-
-    def self.from_json(data)
-      new(data)
-    end
-
-    def to_json
-      attributes.to_json
-    end
-
-    attr_accessor :created_at
-    attr_accessor :notification_url
-    attr_accessor :params
-    attr_accessor :type
-
+    attr_reader :created_at
+    attr_reader :notification_url
+    attr_reader :params
+    attr_reader :type
+    attr_reader :reference
     attr_reader :uid
 
     private
 
-      PERMANENT_EXCEPTIONS = [
-        Resources::PermanentError,
-        InvalidJobError,
-      ].freeze
-
-      def retriable?(exception)
-        !PERMANENT_EXCEPTIONS.any? { |e| exception.is_a?(e) }
-      end
-
-      def temporary_failure(exception)
-        logger.error "Job failed with exception #{exception.class}: #{exception.message}, will retry"
-        notify!(event: :failed_will_retry, reason: exception.message)
-        sleep(1)
-      end
-
-      def permanent_failure(exception)
-        logger.error "No more retries for job, marking as permanently failed"
-        case exception
-          when Timeout::Error, Excon::Errors::Timeout
-            logger.error("The job failed due to timeout")
-          when Resources::ResourceError
-            logger.error("The job failed due to resource: #{exception}")
-          else
-            Application.get.report_exception(exception,
-              "Job permanently failed with unexpected error")
-          end
-      end
-
-      def logger
-        @logger
+      def logger_prefix
+        "#{super} #{@uid}"
       end
 
   end

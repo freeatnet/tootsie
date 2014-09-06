@@ -3,6 +3,8 @@ module Tootsie
 
     class HttpResource
 
+      include PrefixedLogging
+
       def initialize(uri)
         @uri = uri
       end
@@ -11,25 +13,38 @@ module Tootsie
         case mode
           when 'r'
             visited, uri = Set.new, @uri.to_s
+            logger.info "Fetching #{@uri}"
             loop do
               close
+
               response = Excon.get(uri,
                 :headers => {'Accept' => '*/*'},
                 :response_block => proc { |chunk, remaining_bytes, total_bytes|
                   ensure_temp_file.write(chunk)
                 })
+
+              content_type = response.headers['Content-Type']
+              logger.info "Responded with #{response.status}, content type #{content_type}"
+
               case response.status
                 when 200
-                  @content_type = response.headers['Content-Type']
-                  ensure_temp_file.seek(0)
-                  break
+                  if ensure_temp_file.size == 0
+                    logger.error "Response is unexpectedly empty"
+                    raise ResourceEmpty
+                  else
+                    @content_type = content_type
+                    ensure_temp_file.seek(0)
+                    break
+                  end
                 when 301, 302
                   location = response.headers['Location']
                   if location.nil?
+                    logger.info "Missing location header in response"
                     raise ResourceNotFound
                   elsif not visited.add?(location)
                     raise TooManyRedirects
                   else
+                    logger.info "Redirected to #{location}"
                     uri = location
                   end
                 when 404, 410
@@ -37,9 +52,11 @@ module Tootsie
                 when 503
                   # According to HTTP spec, we should only retry if this header is present
                   if response.headers['Retry-After']
+                    logger.info "Retry-After header, counting as retriable"
                     raise ResourceTemporarilyUnavailable,
                       "Server returned status #{response.status} for #{uri}"
                   else
+                    logger.info "No Retry-After header, counting as permanent failure"
                     raise ResourceUnavailable,
                       "Server returned status #{response.status} for #{uri}"
                   end

@@ -5,12 +5,13 @@ module Tootsie
 
     class VideoProcessor
 
+      include PrefixedLogging
+
       def initialize(params = {})
         @input = Resources.parse_uri(params[:input_url])
         @thumbnail_options = (params[:thumbnail] || {}).with_indifferent_access
         @versions = [params[:versions] || {}].flatten
-        @thread_count = Application.get.configuration.ffmpeg_thread_count
-        @logger = Application.get.logger
+        @thread_count = Configuration.instance.ffmpeg_thread_count
       end
 
       def params
@@ -44,7 +45,7 @@ module Tootsie
                     # This actually strips in-place, so no need to swap streams
                     CommandRunner.new("id3v2 --delete-all '#{@input.file.path}'").run do |line|
                       if line.present? and line !~ /\AStripping id3 tag in.*stripped\./
-                        @logger.warn "ID3 stripping failed, ignoring: #{line}"
+                        logger.warn "ID3 stripping failed, ignoring: #{line}"
                       end
                     end
                   end

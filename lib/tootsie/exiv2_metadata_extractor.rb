@@ -3,6 +3,8 @@ module Tootsie
   # Uses external exiv2 tool.
   class Exiv2MetadataExtractor
 
+    include PrefixedLogging
+
     def initialize
       @metadata = {}
     end
@@ -91,10 +93,6 @@ module Tootsie
           end
         end
         value
-      end
-
-      def logger
-        Application.get.logger
       end
 
   end

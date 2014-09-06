@@ -3,10 +3,11 @@ module Tootsie
 
     class ImageProcessor
 
+      include PrefixedLogging
+
       def initialize(params = {})
         @input_url = params[:input_url]
         @versions = [params[:versions] || {}].flatten
-        @logger = Application.get.logger
         @extractor = Exiv2MetadataExtractor.new
       end
 
@@ -26,7 +27,7 @@ module Tootsie
           begin
             versions.each_with_index do |version_options, version_index|
               version_options = version_options.with_indifferent_access
-              @logger.info("Handling version: #{version_options.inspect}")
+              logger.info("Handling version: #{version_options.inspect}")
 
               output = Resources.parse_uri(version_options[:target_url])
               output.open('w')
