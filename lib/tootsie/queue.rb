@@ -65,11 +65,18 @@ module Tootsie
 
     private
 
+      BUNNY_EXCEPTIONS = [
+        Bunny::ServerDownError,
+        Bunny::ConnectionError,
+        Bunny::ProtocolError,
+        Bunny::ClientTimeout
+      ]
+
       def with_connection(&block)
         begin
           connect!
           result = yield
-        rescue Bunny::ServerDownError, Bunny::ConnectionError, Bunny::ProtocolError => e
+        rescue *BUNNY_EXCEPTIONS => e
           @logger.error "Error in AMQP server connection (#{e.class}: #{e}), retrying"
           reset_connection
           sleep(0.5)
