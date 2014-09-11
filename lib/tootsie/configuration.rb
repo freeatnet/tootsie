@@ -10,7 +10,7 @@ module Tootsie
       @river = Pebbles::River::River.new
       @logger = LOGGER if defined?(logger)
       @logger ||= Logger.new($stdout)
-      @use_legacy_completion_event = false
+      @use_legacy_completion_event = true
       @failure_queue_ttl = nil
     end
 
@@ -79,7 +79,6 @@ module Tootsie
     attr_accessor :aws_secret_access_key
     attr_accessor :aws_access_key_id
     attr_accessor :create_failure_queue
-    attr_accessor :use_legacy_completion_event
     attr_accessor :failure_queue_ttl
 
     attr_reader :river

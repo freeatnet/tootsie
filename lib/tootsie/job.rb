@@ -65,10 +65,12 @@ module Tootsie
             "Notification to #{notification_url} failed with exception")
         end
       else
-        if event == :completed and Configuration.instance.use_legacy_completion_event
-          event[:event] = 'tootsie_completed'
-        end
         Configuration.instance.river.publish(event)
+
+        if event == :completed and Configuration.instance.use_legacy_completion_event
+          # TODO: Legacy event name, for backwards compatibility
+          Configuration.instance.river.publish(event.merge(event: 'tootsie_completed'))
+        end
       end
     end
 
