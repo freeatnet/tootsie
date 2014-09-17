@@ -13,7 +13,7 @@ GEM
       multi_json
     amq-protocol (1.9.2)
     builder (2.1.2)
-    bunny (1.4.0)
+    bunny (1.4.1)
       amq-protocol (>= 1.9.2)
     crack (0.4.2)
       safe_yaml (~> 1.0.0)
@@ -44,7 +44,7 @@ GEM
       pathbuilder
       queryparams
       yajl-ruby
-    pebbles-river (0.1.8)
+    pebbles-river (0.1.9)
       activesupport (>= 3.0)
       bunny (~> 1.4.0)
       mercenary (~> 0.3.3)
