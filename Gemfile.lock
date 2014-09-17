@@ -44,7 +44,7 @@ GEM
       pathbuilder
       queryparams
       yajl-ruby
-    pebbles-river (0.1.9)
+    pebbles-river (0.1.10)
       activesupport (>= 3.0)
       bunny (~> 1.4.0)
       mercenary (~> 0.3.3)
