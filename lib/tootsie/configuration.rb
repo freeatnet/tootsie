@@ -49,7 +49,9 @@ module Tootsie
       @paths.each do |_, path|
         path.symbolize_keys.assert_valid_keys(:worker_count)
       end
+    end
 
+    def start
       if @create_failure_queue
         @river.queue(
           name: 'tootsie.failed',

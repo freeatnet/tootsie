@@ -8,6 +8,7 @@ adapter = Class.new do
   end
 
   def on_start(options, helper)
+    Tootsie::Configuration.instance.start
   end
 
   def configure_supervisor(supervisor)
