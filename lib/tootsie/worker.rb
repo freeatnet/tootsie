@@ -4,9 +4,14 @@ module Tootsie
     include PrefixedLogging
 
     def call(event)
-      job = Job.new(event.payload.except('event'))
-      with_job(job) do
-        handle_job(job)
+      payload = event.payload.except('event')
+      begin
+        job = Job.new(payload)
+        with_job(job) do
+          handle_job(job)
+        end
+      rescue Job::InvalidJobError => e
+        logger.error "Invalid job, ignoring: #{payload.inspect}"
       end
       nil
     end
@@ -79,8 +84,7 @@ module Tootsie
       end
 
       PERMANENT_EXCEPTIONS = [
-        Resources::PermanentError,
-        Job::InvalidJobError,
+        Resources::PermanentError
       ].freeze
 
       def retriable?(exception)
