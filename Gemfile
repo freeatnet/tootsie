@@ -15,9 +15,9 @@ gem 'nokogiri', '~> 1.6.1'
 gem 'pebblebed'
 gem 'pebbles-river', '~> 0.1.6'
 
-# These are included for convenience, allowing Tootsie to report to these services.
-gem 'airbrake', '~> 3.1'
-gem 'rollbar', '~> 0.12'
+group :production do
+  gem 'airbrake', '~> 3.1'
+end
 
 group :test do
   gem "rspec"
