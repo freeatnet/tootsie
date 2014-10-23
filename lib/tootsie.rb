@@ -1,7 +1,6 @@
 require_relative 'tootsie/logging'
 require_relative 'tootsie/configuration'
 require_relative 'tootsie/command_runner'
-require_relative 'tootsie/spawner'
 require_relative 'tootsie/ffmpeg_adapter'
 require_relative 'tootsie/exiv2_metadata_extractor'
 require_relative 'tootsie/resources/resources'
