@@ -13,7 +13,7 @@ GEM
       multi_json
     amq-protocol (1.9.2)
     builder (2.1.2)
-    bunny (1.4.1)
+    bunny (1.6.0.rc2)
       amq-protocol (>= 1.9.2)
     crack (0.4.2)
       safe_yaml (~> 1.0.0)
@@ -29,14 +29,14 @@ GEM
     mercenary (0.3.4)
     mime-types (1.25.1)
     mini_portile (0.6.0)
-    minitest (5.4.1)
+    minitest (5.4.2)
     multi_json (1.10.1)
     nokogiri (1.6.3.1)
       mini_portile (= 0.6.0)
     pathbuilder (0.0.2)
-    pebblebed (0.2.3)
+    pebblebed (0.3.0)
       activesupport
-      bunny (~> 1.4.0)
+      bunny (= 1.6.0.rc2)
       curb (>= 0.8.4)
       deepstruct (>= 0.0.4)
       futurevalue
@@ -44,11 +44,11 @@ GEM
       pathbuilder
       queryparams
       yajl-ruby
-    pebbles-river (0.1.10)
+    pebbles-river (0.2.0)
       activesupport (>= 3.0)
-      bunny (~> 1.4.0)
+      bunny (= 1.6.0.rc2)
       mercenary (~> 0.3.3)
-      pebblebed (>= 0.2.2)
+      pebblebed (~> 0.3.0)
       servolux (~> 0.10)
     proxies (0.2.1)
     queryparams (0.0.3)
@@ -111,8 +111,8 @@ DEPENDENCIES
   json (~> 1.7)
   mime-types (~> 1.16)
   nokogiri (~> 1.6.1)
-  pebblebed
-  pebbles-river (~> 0.1.6)
+  pebblebed (~> 0.3.0)
+  pebbles-river (~> 0.2.0)
   rack-test
   rake
   rspec

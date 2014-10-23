@@ -12,8 +12,8 @@ gem 'unicorn', '~> 4.8.3'
 gem 'i18n', '>= 0.4'
 gem 'scashin133-syslog_logger', '~> 1.7'
 gem 'nokogiri', '~> 1.6.1'
-gem 'pebblebed'
-gem 'pebbles-river', '~> 0.1.6'
+gem 'pebblebed', '~> 0.3.0'
+gem 'pebbles-river', '~> 0.2.0'
 
 group :production do
   gem 'airbrake', '~> 3.1'
