@@ -52,6 +52,13 @@ module Tootsie
     end
 
     def start
+      begin
+        @river.connect
+      rescue => e
+        logger.error "Starting: Could not connect, will retry: #{e.class}: #{e}"
+        sleep 1
+        retry
+      end
       if @create_failure_queue
         @river.queue(
           name: 'tootsie.failed',
