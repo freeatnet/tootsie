@@ -147,6 +147,16 @@ module Tootsie
                     convert_options[:crop] = "#{new_width}x#{new_height}+0+0"
                   end
                 end
+                if (trimming = version_options[:trimming])
+                  if trimming.fetch(:trim, false)
+                    if (fuzz = trimming[:fuzz_factor])
+                      convert_command << " -fuzz :fuzz"
+                      convert_options[:fuzz] =
+                        ([[fuzz.to_f, 1.0].min, 0.0].max * 100).round(2).to_s + '%'
+                    end
+                    convert_command << " -trim"
+                  end
+                end
                 if version_options[:strip_metadata]
                   convert_command << " +profile :remove_profiles -set comment ''"
                   convert_options[:remove_profiles] = "8bim,iptc,xmp,exif"

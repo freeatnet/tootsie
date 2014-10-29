@@ -16,7 +16,7 @@ module ImageHelper
       result[:outputs].length.should eq 1
       result[:outputs][0].should have_key(:url)
 
-      content = File.read(file.path)
+      content = File.read(file.path, encoding: 'binary')
       content.length.should be > 0
     end
     [result, content]

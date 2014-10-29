@@ -221,6 +221,9 @@ Image jobs have the `type` key set to `image`. The key `params` must be set to a
         * `fit`: Similar to `down`, but the dimensions are chosen so the output width and height are always met or exceeded. In other words, if you pass in an image that is 100x50, specifying output dimensions as 100x100, then the output image will be 150x100.
         * `none`: Don't scale at all.
     * `crop`: If true, crop the image to the output dimensions.
+    * `trimming`: Trim options:
+        * `trim`: If true, any solid-colour border will be trimmed.
+        * `fuzz_factor`: Amount of fuzziness to apply to trim operation; a number between 0.0 and 1.0. Defaults to 0.0.
     * `format`: Either `jpeg`, `png` or `gif`.
     * `quality`: A quality value between 0.0 and 1.0 which will be translated to a compression level depending on the output coding. The default is 1.0.
     * `strip_metadata`: If true, metadata such as EXIF and IPTC will be deleted. For thumbnails, this often reduces the file size considerably.
