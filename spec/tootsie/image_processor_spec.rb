@@ -47,7 +47,6 @@ describe ImageProcessor do
       result, contents = process_image_version('border.jpeg', {
         trimming: {trim: true}
       })
-      expect(contents).to eq test_data('border-trimmed.jpeg')
       extract_dimensions(contents).should eq [144, 104]
     end
 
@@ -69,7 +68,6 @@ describe ImageProcessor do
       result, contents = process_image_version('border.jpeg', {
         trimming: {trim: true, fuzz_factor: 0.1}
       })
-      expect(contents).to eq test_data('border-trimmed-10%.jpeg')
       extract_dimensions(contents).should eq [128, 89]
     end
   end
