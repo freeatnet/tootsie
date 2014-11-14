@@ -78,38 +78,22 @@ module Tootsie
 
                 auto_orient = (medium == :web || version_options[:strip_metadata])
 
-                new_width, new_height =
+                target_width, target_height =
                   version_options[:width].try(:to_i),
                   version_options[:height].try(:to_i)
-                if new_width
-                  new_height ||= (new_width * original_aspect).ceil
-                elsif new_height
-                  new_width ||= (new_height / original_aspect).ceil
+                if target_width
+                  target_height ||= (target_width * original_aspect).ceil
+                elsif target_height
+                  target_width ||= (target_height / original_aspect).ceil
                 else
-                  new_width, new_height = original_width, original_height
+                  target_width, target_height = original_width, original_height
                 end
 
                 scale = (version_options[:scale] || 'down').to_sym
-                case scale
-                  when :down
-                    if new_width > original_width
-                      scale_width = original_width
-                      scale_height = (original_width * original_aspect).ceil
-                    elsif new_height > original_height
-                      scale_height = original_height
-                      scale_width = (original_height / original_aspect).ceil
-                    end
-                  when :fit
-                    if (new_width * original_aspect).ceil < new_height
-                      scale_height = new_height
-                      scale_width = (new_height / original_aspect).ceil
-                    elsif (new_height / original_aspect).ceil < new_width
-                      scale_width = new_width
-                      scale_height = (new_width * original_aspect).ceil
-                    end
-                end
-                scale_width ||= new_width
-                scale_height ||= new_height
+
+                scale_width, scale_height = ImageUtils.compute_dimensions(scale,
+                  original_width, original_height,
+                  target_width, target_height)
 
                 convert_command = "convert"
                 convert_options = {
@@ -142,9 +126,9 @@ module Tootsie
                   convert_command << " +repage"  # This fixes some animations
                   if dimensions_rotated and not auto_orient
                     # ImageMagick cropping operates on pixel dimensions, not orientation
-                    convert_options[:crop] = "#{new_height}x#{new_width}+0+0"
+                    convert_options[:crop] = "#{target_height}x#{target_width}+0+0"
                   else
-                    convert_options[:crop] = "#{new_width}x#{new_height}+0+0"
+                    convert_options[:crop] = "#{target_width}x#{target_height}+0+0"
                   end
                 end
                 if (trimming = version_options[:trimming])
