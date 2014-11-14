@@ -203,8 +203,8 @@ module Tootsie
 
                 result[:outputs] << {
                   :url => output.public_url,
-                  :width => new_width,
-                  :height => new_height
+                  :width => scale_width,
+                  :height => scale_height
                 }
               ensure
                 output.close
