@@ -62,7 +62,7 @@ module Tootsie
                 result[:format] = output_format
 
                 # Correct for EXIF orientation
-                dimensions_rotated = [5, 6, 7, 8].include?(original_orientation)
+                dimensions_rotated = rotated_orientation?(original_orientation)
                 if dimensions_rotated
                   original_width, original_height = original_height, original_width
                 end
@@ -95,6 +95,8 @@ module Tootsie
                   original_width, original_height,
                   target_width, target_height)
 
+                output_width, output_height = nil, nil
+
                 convert_command = "convert"
                 convert_options = {
                   :input_file => input.file.path,
@@ -113,6 +115,8 @@ module Tootsie
                 end
 
                 if scale != :none
+                  output_width, output_height = scale_width, scale_height
+
                   convert_command << " -resize :resize"
                   if dimensions_rotated and not auto_orient
                     # ImageMagick resizing operates on pixel dimensions, not orientation
@@ -122,6 +126,9 @@ module Tootsie
                   end
                 end
                 if version_options[:crop]
+                  output_width = [output_width, target_width].min
+                  output_height = [output_height, target_height].min
+
                   convert_command << " -gravity center -crop :crop"
                   convert_command << " +repage"  # This fixes some animations
                   if dimensions_rotated and not auto_orient
@@ -133,6 +140,8 @@ module Tootsie
                 end
                 if (trimming = version_options[:trimming])
                   if trimming.fetch(:trim, false)
+                    output_width, output_height = nil, nil  # Force probing later
+
                     if (fuzz = trimming[:fuzz_factor])
                       convert_command << " -fuzz :fuzz"
                       convert_options[:fuzz] =
@@ -177,6 +186,26 @@ module Tootsie
                   Pngcrush.process!(output.file.path)
                 end
 
+                unless output_width and output_height
+                  CommandRunner.new("identify -format '%w %h %[EXIF:Orientation]' :file").
+                    run(:file => output.file.path
+                  ) do |line|
+                    if line =~ /(\d+) (\d+) ([^\s]*)/
+                      output_width, output_height = $~[1, 2].map(&:to_i)
+
+                      # Correct for EXIF orientation
+                      if $3.present? and
+                        (new_orientation = $3.try(:to_i)) and
+                        rotated_orientation?(new_orientation)
+                        output_width, output_height = output_height, output_width
+                      end
+                    end
+                  end
+                  unless output_width and output_height
+                    raise "Unable to determine dimensions of output image"
+                  end
+                end
+
                 output.content_type = version_options[:content_type] if version_options[:content_type]
                 output.content_type ||= case version_options[:format]
                   when 'jpeg' then 'image/jpeg'
@@ -187,8 +216,8 @@ module Tootsie
 
                 result[:outputs] << {
                   :url => output.public_url,
-                  :width => scale_width,
-                  :height => scale_height
+                  :width => output_width,
+                  :height => output_height
                 }
               ensure
                 output.close
@@ -203,6 +232,12 @@ module Tootsie
 
       attr_accessor :input_url
       attr_accessor :versions
+
+      private
+
+        def rotated_orientation?(orientation)
+          [5, 6, 7, 8].include?(orientation)
+        end
 
     end
 
