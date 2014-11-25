@@ -7,6 +7,7 @@ module Tootsie
       aspect = original_height / original_width.to_f
       case method
         when :up
+          # FIXME: Use floor, not round
           if original_width < target_width or original_height < target_height
             if original_width > original_height
               w = target_width
@@ -21,6 +22,7 @@ module Tootsie
               target_width, target_height)
           end
         when :down
+          # FIXME: Use floor, not round
           if original_height > target_height
             if target_height / aspect > target_width
               w = [original_width, target_width].min.round
@@ -39,12 +41,12 @@ module Tootsie
             end
           end
         when :fit
-          if (target_width * aspect).ceil < target_height
+          if (target_width * aspect).floor < target_height
             h = target_height
-            w = (target_height / aspect).ceil
-          elsif (target_height / aspect).ceil < target_width
+            w = (target_height / aspect).floor
+          elsif (target_height / aspect).floor < target_width
             w = target_width
-            h = (target_width * aspect).ceil
+            h = (target_width * aspect).floor
           end
         else
           raise ArgumentError, "Invalid scaling method"

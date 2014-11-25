@@ -53,7 +53,7 @@ describe Tootsie::ImageUtils do
 
         expect(
           subject.compute_dimensions(:fit, 200, 300, 100, 200)
-        ).to eq([134, 200])
+        ).to eq([133, 200])
       end
     end
 
