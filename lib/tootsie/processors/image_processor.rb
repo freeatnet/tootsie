@@ -126,8 +126,8 @@ module Tootsie
                   end
                 end
                 if version_options[:crop]
-                  output_width = [output_width, target_width].min
-                  output_height = [output_height, target_height].min
+                  output_width = [output_width || scale_width, target_width].min
+                  output_height = [output_height || scale_height, target_height].min
 
                   convert_command << " -gravity center -crop :crop"
                   convert_command << " +repage"  # This fixes some animations
