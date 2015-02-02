@@ -1,6 +1,12 @@
 module Tootsie
 
-  class CommandExecutionFailed < StandardError; end
+  class CommandExecutionFailed < StandardError
+    def initialize(message, output)
+      super("#{message}\n#{output}")
+      @output = output
+    end
+    attr_reader :output
+  end
 
   class CommandRunner
 
@@ -31,9 +37,19 @@ module Tootsie
       command_line = "#{command_line} 2>&1"
 
       logger.info("Running: #{command_line}") if logger.info?
+
+      buffered_output, buffer_exceeded = '', false
+
       elapsed_time = Benchmark.realtime {
         IO.popen(command_line, "r:#{@options[:output_encoding] || 'utf-8'}") do |output|
           output.each_line do |line|
+            if buffered_output.length < 10240
+              buffered_output << line
+            elsif not buffer_exceeded
+              buffer_exceeded = true
+              buffered_output << '[...]'
+            end
+
             line.split(/\r/).each do |linepart|
               logger.info("--> #{linepart.strip}") if logger.info?
               yield linepart if block_given?
@@ -42,24 +58,30 @@ module Tootsie
         end
       }
 
-      status = $?
+      error, success, status = nil, false, $?
       if status.exited?
         if status.exitstatus != 0
           if @options[:ignore_exit_code]
-            return false
+            # Ignore
           else
-            raise CommandExecutionFailed, "Command failed with exit code #{status.exitstatus}: #{command_line}"
+            error = "Command failed with exit code #{status.exitstatus}"
           end
+        else
+          success = true
+          logger.info "Finished in #{elapsed_time.round(3)} secs"
         end
-        logger.info "Finished in #{elapsed_time.round(3)} secs"
       elsif status.stopped?
-        raise CommandExecutionFailed, "Command stopped unexpectedly with signal #{status.stopsig}: #{command_line}"
+        error = "Command stopped unexpectedly with signal #{status.stopsig}"
       elsif status.signaled?
-        raise CommandExecutionFailed, "Command died unexpectedly by signal #{status.termsig}: #{command_line}"
+        error = "Command died unexpectedly by signal #{status.termsig}"
       else
-        raise CommandExecutionFailed, "Command died unexpectedly: #{command_line}"
+        error = "Command died unexpectedly"
       end
-      true
+      if error
+        raise CommandExecutionFailed.new("#{error}: #{command_line}",
+          buffered_output)
+      end
+      return success
     end
 
     protected

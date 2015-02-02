@@ -1,3 +1,4 @@
+require_relative 'tootsie/errors'
 require_relative 'tootsie/logging'
 require_relative 'tootsie/configuration'
 require_relative 'tootsie/command_runner'

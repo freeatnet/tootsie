@@ -1,6 +1,8 @@
 module Tootsie
   module Processors
 
+    class UnsupportedImageFormat < InputError; end
+
     class ImageProcessor
 
       include PrefixedLogging
@@ -40,13 +42,21 @@ module Tootsie
                 original_type = nil
                 original_format = nil
                 original_orientation = nil
-                CommandRunner.new("identify -format '%z %w %h %m %[EXIF:Orientation] %r' :file").
-                  run(:file => input.file.path) do |line|
-                  if line =~ /(\d+) (\d+) (\d+) ([^\s]+) (\d+)? (.+)/
-                    original_depth, original_width, original_height = $~[1, 3].map(&:to_i)
-                    original_format = $4.downcase
-                    original_orientation = $5.try(:to_i)
-                    original_type = $6
+                begin
+                  CommandRunner.new("identify -format '%z %w %h %m %[EXIF:Orientation] %r' :file").
+                    run(:file => input.file.path) do |line|
+                    if line =~ /(\d+) (\d+) (\d+) ([^\s]+) (\d+)? (.+)/
+                      original_depth, original_width, original_height = $~[1, 3].map(&:to_i)
+                      original_format = $4.downcase
+                      original_orientation = $5.try(:to_i)
+                      original_type = $6
+                    end
+                  end
+                rescue CommandExecutionFailed => e
+                  if e.output =~ /no decode delegate for this image format/
+                    raise UnsupportedImageFormat
+                  else
+                    raise
                   end
                 end
                 unless original_width and original_height

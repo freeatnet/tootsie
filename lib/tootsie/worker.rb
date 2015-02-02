@@ -99,6 +99,8 @@ module Tootsie
             logger.error("The job failed due to timeout")
           when Resources::ResourceError
             logger.error("The job failed due to resource: #{exception}")
+          when InputError
+            logger.error("The job failed due to malformed input: #{exception}")
           else
             Configuration.instance.report_exception(exception,
               "Job permanently failed with unexpected error")
