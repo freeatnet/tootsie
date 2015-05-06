@@ -1,11 +1,13 @@
 module Tootsie
 
   class CommandExecutionFailed < StandardError
-    def initialize(message, output)
-      super("#{message}\n#{output}")
+    def initialize(message, command_line, output)
+      super("#{message}: #{command_line}. Output was: #{output}")
       @output = output
+      @command_line = command_line
     end
     attr_reader :output
+    attr_reader :command_line
   end
 
   class CommandRunner
@@ -78,8 +80,7 @@ module Tootsie
         error = "Command died unexpectedly"
       end
       if error
-        raise CommandExecutionFailed.new("#{error}: #{command_line}",
-          buffered_output)
+        raise CommandExecutionFailed.new(error, command_line, buffered_output)
       end
       return success
     end

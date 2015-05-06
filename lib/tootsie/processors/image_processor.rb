@@ -4,7 +4,6 @@ module Tootsie
     class UnsupportedImageFormat < InputError; end
 
     class ImageProcessor
-
       include PrefixedLogging
 
       def initialize(params = {})
@@ -53,7 +52,9 @@ module Tootsie
                     end
                   end
                 rescue CommandExecutionFailed => e
-                  if e.output =~ /no decode delegate for this image format/
+                  if e.output =~ /^identify/
+                    # This typically indicates identify itself couldn't identify, vs. some
+                    # other kind of unrelated system issue
                     raise UnsupportedImageFormat
                   else
                     raise
