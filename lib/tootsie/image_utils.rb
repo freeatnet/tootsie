@@ -39,6 +39,9 @@ module Tootsie
               w = target_width
               h = (w * aspect).round
             end
+          else
+            w = original_width
+            h = original_height
           end
         when :fit
           if (target_width * aspect).floor < target_height
