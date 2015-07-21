@@ -30,6 +30,10 @@ describe Tootsie::ImageUtils do
         expect(
           subject.compute_dimensions(:down, 200, 300, 100, 200)
         ).to eq([100, 150])
+
+        expect(
+          subject.compute_dimensions(:down, 50, 50, 100, 200)
+        ).to eq([50, 50])
       end
     end
 
