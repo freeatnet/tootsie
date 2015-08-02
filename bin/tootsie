@@ -4,6 +4,10 @@ require_relative '../config/environment'
 
 adapter = Class.new do
 
+  # Since job processing is slow, we use a very small prefetch in order to avoid
+  # stealing messages from other consumers that are idle.
+  PREFETCH = 1
+
   def configure_start_command(command)
   end
 
@@ -12,16 +16,18 @@ adapter = Class.new do
   end
 
   def configure_supervisor(supervisor)
-    supervisor.add_listener(Tootsie::Worker.new,
+    supervisor.add_listener(Tootsie::Worker.new, {
       name: 'tootsie',
       path: 'tootsie|default',  # 'tootsie' is for backwards compatibility
-      event: 'tootsie.job')
+      event: 'tootsie.job'
+    }, prefetch: PREFETCH)
+
     Tootsie::Configuration.instance.paths.each do |path, options|
       supervisor.add_listener(Tootsie::Worker.new, {
         name: "tootsie.#{path}",
         path: path,
         event: 'tootsie.job'
-      }, worker_count: options[:worker_count])
+      }, worker_count: options[:worker_count], prefetch: PREFETCH)
     end
   end
 

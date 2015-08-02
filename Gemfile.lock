@@ -1,7 +1,7 @@
 GEM
   remote: https://rubygems.org/
   specs:
-    activesupport (4.2.1)
+    activesupport (4.2.3)
       i18n (~> 0.7)
       json (~> 1.7, >= 1.7.7)
       minitest (~> 5.1)
@@ -24,12 +24,12 @@ GEM
     excon (0.39.5)
     futurevalue (0.0.2)
     i18n (0.7.0)
-    json (1.8.2)
+    json (1.8.3)
     kgio (2.9.2)
     mercenary (0.3.5)
     mime-types (1.25.1)
     mini_portile (0.6.2)
-    minitest (5.6.1)
+    minitest (5.7.0)
     multi_json (1.10.1)
     nokogiri (1.6.6.2)
       mini_portile (~> 0.6.0)
@@ -44,7 +44,7 @@ GEM
       pathbuilder
       queryparams
       yajl-ruby
-    pebbles-river (0.2.3)
+    pebbles-river (0.2.6)
       activesupport (>= 3.0)
       bunny (~> 1.7.0)
       mercenary (~> 0.3.3)
@@ -75,7 +75,7 @@ GEM
       proxies (~> 0.2.0)
     safe_yaml (1.0.3)
     scashin133-syslog_logger (1.7.3)
-    servolux (0.10.0)
+    servolux (0.12.0)
     simplecov (0.9.0)
       docile (~> 1.1.0)
       multi_json
