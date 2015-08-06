@@ -45,6 +45,11 @@ module Tootsie
         halt 201, job.uid
       end
 
+      error Pebbles::River::ConnectionError do |e|
+        logger.error("#{e.class}: #{e.message}")
+        halt 503, "Internal connection error"
+      end
+
     end
   end
 end
