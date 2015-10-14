@@ -21,7 +21,6 @@ end
 
 group :test do
   gem "rspec"
-  gem "rake"
   gem "simplecov"
   gem "rack-test"
   gem "webmock", ">= 1.11"

@@ -58,7 +58,6 @@ GEM
     rack-test (0.6.2)
       rack (>= 1.0)
     raindrops (0.13.0)
-    rake (10.3.2)
     rspec (3.1.0)
       rspec-core (~> 3.1.0)
       rspec-expectations (~> 3.1.0)
@@ -114,7 +113,6 @@ DEPENDENCIES
   pebblebed (~> 0.3.0)
   pebbles-river (~> 0.2.0)
   rack-test
-  rake
   rspec
   s3 (= 0.3.8)
   scashin133-syslog_logger (~> 1.7)
@@ -123,3 +121,6 @@ DEPENDENCIES
   unicorn (~> 4.8.3)
   webmock (>= 1.11)
   xml-simple (~> 1.0)
+
+BUNDLED WITH
+   1.10.5
