@@ -48,7 +48,7 @@ describe VideoProcessor do
         }
       ]).execute!
 
-    post_stub.should have_been_requested
+    expect(post_stub).to have_been_requested
   end
 
 end

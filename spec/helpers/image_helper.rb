@@ -12,12 +12,12 @@ module ImageHelper
         :versions => [version])
 
       result = proc.execute!
-      result.should have_key(:outputs)
-      result[:outputs].length.should eq 1
-      result[:outputs][0].should have_key(:url)
+      expect(result).to have_key(:outputs)
+      expect(result[:outputs].length).to eq 1
+      expect(result[:outputs][0]).to have_key(:url)
 
       content = File.read(file.path)
-      content.length.should be > 0
+      expect(content.length).to be > 0
     end
     [result, content]
   end
