@@ -12,6 +12,9 @@ module Tootsie
         end
       rescue Job::InvalidJobError => e
         logger.error "Invalid job, ignoring: #{payload.inspect}"
+      rescue Pebbles::River::ConnectionError => e
+        logger.error "River error, will NACK"
+        return false
       end
       nil
     end
@@ -99,6 +102,8 @@ module Tootsie
             logger.error("The job failed due to timeout")
           when Resources::ResourceError
             logger.error("The job failed due to resource: #{exception}")
+          when InputError
+            logger.error("The job failed due to malformed input: #{exception}")
           else
             Configuration.instance.report_exception(exception,
               "Job permanently failed with unexpected error")

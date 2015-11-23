@@ -8,4 +8,8 @@ module FileHelper
     "file:#{test_file_path(path)}"
   end
 
+  def test_data(name)
+    File.read(test_file_path(name), encoding: 'binary')
+  end
+
 end

@@ -40,6 +40,8 @@ module Tootsie
         else
           raise UnsupportedResourceTypeError, "Unsupported resource: #{uri.inspect}"
       end
+    rescue URI::Error => e
+      raise InvalidUriError, "Not a valid resource URL: #{uri}"
     end
 
   end

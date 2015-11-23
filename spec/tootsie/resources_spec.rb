@@ -37,7 +37,9 @@ describe Resources do
     end
 
     it 'raises error on unsupported URI' do
-      ["xyz", "", nil].each do |uri|
+      ["xyz", "", nil,
+        "http&#58;//tours.palloniimages.com/public/vtour/full/117265/http&#58;//www.beazer.com/content/video/why_beazer.mov"
+      ].each do |uri|
         expect(lambda {
           Resources.parse_uri(uri)
         }).to raise_error(Resources::InvalidUriError)

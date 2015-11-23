@@ -65,6 +65,7 @@ module Tootsie
             "Notification to #{notification_url} failed with exception")
         end
       else
+        logger.info { "Publishing event: #{event.inspect}" }
         Configuration.instance.river.publish(event)
 
         if event == :completed and Configuration.instance.use_legacy_completion_event

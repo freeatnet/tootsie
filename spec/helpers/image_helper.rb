@@ -16,7 +16,7 @@ module ImageHelper
       expect(result[:outputs].length).to eq 1
       expect(result[:outputs][0]).to have_key(:url)
 
-      content = File.read(file.path)
+      content = File.read(file.path, encoding: 'binary')
       expect(content.length).to be > 0
     end
     [result, content]
