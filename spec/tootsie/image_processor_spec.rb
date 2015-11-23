@@ -47,28 +47,28 @@ describe ImageProcessor do
       result, contents = process_image_version('border.jpeg', {
         trimming: {trim: true}
       })
-      extract_dimensions(contents).should eq [144, 104]
+      expect(extract_dimensions(contents)).to eq [144, 104]
     end
 
     it "supports trimming disabled" do
       result, contents = process_image_version('border.jpeg', {
         trimming: {trim: false}
       })
-      extract_dimensions(contents).should eq [200, 133]
+      expect(extract_dimensions(contents)).to eq [200, 133]
     end
 
     it "trimming defaults to disabled" do
       result, contents = process_image_version('border.jpeg', {
         trimming: {}
       })
-      extract_dimensions(contents).should eq [200, 133]
+      expect(extract_dimensions(contents)).to eq [200, 133]
     end
 
     it "supports fuzz factor" do
       result, contents = process_image_version('border.jpeg', {
         trimming: {trim: true, fuzz_factor: 0.1}
       })
-      extract_dimensions(contents).should eq [128, 89]
+      expect(extract_dimensions(contents)).to eq [128, 89]
     end
   end
 
