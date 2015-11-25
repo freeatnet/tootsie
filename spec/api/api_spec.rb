@@ -42,7 +42,7 @@ describe V1 do
         post '/jobs', JSON.dump(attributes.merge(
           path: 'dustin_hoffman'
         ))
-        last_response.status.should eq 201
+        expect(last_response.status).to eq 201
       end
 
       it 'accepts job without a path, defaults to "tootsie"' do
@@ -57,7 +57,7 @@ describe V1 do
           expect(event[:uid]).to match /^tootsie\.job:default\$/
         end
         post '/jobs', JSON.dump(attributes)
-        last_response.status.should eq 201
+        expect(last_response.status).to eq 201
       end
 
     end

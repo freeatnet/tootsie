@@ -11,28 +11,28 @@ if Tootsie::Exiv2MetadataExtractor.available?
 
     it 'should read EXIF data' do
       extractor.extract_from_file(test_file_path('iptc.tiff'))
-      extractor.metadata['Exif.Image.ImageWidth'][:type].should == 'short'
-      extractor.metadata['Exif.Image.ImageWidth'][:value].should == 10
-      extractor.metadata['Exif.Image.ImageLength'][:type].should == 'short'
-      extractor.metadata['Exif.Image.ImageLength'][:value].should == 10
-      extractor.metadata['Exif.Image.ImageDescription'][:type].should == 'ascii'
-      extractor.metadata['Exif.Image.ImageDescription'][:value].should == 'Tømmer på vannet ved Krøderen'
+      expect(extractor.metadata['Exif.Image.ImageWidth'][:type]).to eq 'short'
+      expect(extractor.metadata['Exif.Image.ImageWidth'][:value]).to eq 10
+      expect(extractor.metadata['Exif.Image.ImageLength'][:type]).to eq 'short'
+      expect(extractor.metadata['Exif.Image.ImageLength'][:value]).to eq 10
+      expect(extractor.metadata['Exif.Image.ImageDescription'][:type]).to eq 'ascii'
+      expect(extractor.metadata['Exif.Image.ImageDescription'][:value]).to eq 'Tømmer på vannet ved Krøderen'
     end
 
     it 'should read IPTC data' do
       extractor.extract_from_file(test_file_path('iptc.tiff'))
-      extractor.metadata['Iptc.Application2.City'][:type].should == 'string'
-      extractor.metadata['Iptc.Application2.City'][:value].should == 'Krødsherad'
-      extractor.metadata['Iptc.Application2.ObjectName'][:type].should == 'string'
-      extractor.metadata['Iptc.Application2.ObjectName'][:value].should == 'Parti fra Krødsherad'
+      expect(extractor.metadata['Iptc.Application2.City'][:type]).to eq 'string'
+      expect(extractor.metadata['Iptc.Application2.City'][:value]).to eq 'Krødsherad'
+      expect(extractor.metadata['Iptc.Application2.ObjectName'][:type]).to eq 'string'
+      expect(extractor.metadata['Iptc.Application2.ObjectName'][:value]).to eq 'Parti fra Krødsherad'
     end
 
     it 'should read XMP data' do
       extractor.extract_from_file(test_file_path('iptc.tiff'))
-      extractor.metadata['Xmp.dc.description'][:type].should == 'lang_alt'
-      extractor.metadata['Xmp.dc.description'][:value].should == 'lang="x-default" Tømmer på vannet ved Krøderen'
-      extractor.metadata['Xmp.tiff.YResolution'][:type].should == 'xmp_text'
-      extractor.metadata['Xmp.tiff.YResolution'][:value].should == '300'
+      expect(extractor.metadata['Xmp.dc.description'][:type]).to eq 'lang_alt'
+      expect(extractor.metadata['Xmp.dc.description'][:value]).to eq 'lang="x-default" Tømmer på vannet ved Krøderen'
+      expect(extractor.metadata['Xmp.tiff.YResolution'][:type]).to eq 'xmp_text'
+      expect(extractor.metadata['Xmp.tiff.YResolution'][:value]).to eq '300'
     end
 
   end
