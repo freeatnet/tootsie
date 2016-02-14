@@ -8,7 +8,6 @@ gem 'builder', '~> 2.1'
 gem 'mime-types', '~> 1.16'
 gem 'xml-simple', '~> 1.0'
 gem 's3', '= 0.3.8'  # Later versions are broken
-gem 'unicorn', '~> 4.8.3'
 gem 'i18n', '>= 0.4'
 gem 'scashin133-syslog_logger', '~> 1.7'
 gem 'nokogiri', '~> 1.6.1'

@@ -25,7 +25,6 @@ GEM
     futurevalue (0.0.2)
     i18n (0.7.0)
     json (1.8.3)
-    kgio (2.9.2)
     mercenary (0.3.5)
     mime-types (1.25.1)
     mini_portile (0.6.2)
@@ -57,7 +56,6 @@ GEM
       rack
     rack-test (0.6.2)
       rack (>= 1.0)
-    raindrops (0.13.0)
     rspec (3.1.0)
       rspec-core (~> 3.1.0)
       rspec-expectations (~> 3.1.0)
@@ -88,10 +86,6 @@ GEM
     tilt (1.4.1)
     tzinfo (1.2.2)
       thread_safe (~> 0.1)
-    unicorn (4.8.3)
-      kgio (~> 2.6)
-      rack
-      raindrops (~> 0.7)
     webmock (1.18.0)
       addressable (>= 2.3.6)
       crack (>= 0.3.2)
@@ -118,9 +112,8 @@ DEPENDENCIES
   scashin133-syslog_logger (~> 1.7)
   simplecov
   sinatra (~> 1.2)
-  unicorn (~> 4.8.3)
   webmock (>= 1.11)
   xml-simple (~> 1.0)
 
 BUNDLED WITH
-   1.10.5
+   1.11.2
