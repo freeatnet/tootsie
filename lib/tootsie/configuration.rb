@@ -8,7 +8,7 @@ module Tootsie
       @ffmpeg_thread_count = 1
       @queue_options = {}
       @river = Pebbles::River::River.new
-      @logger = LOGGER if defined?(logger)
+      @logger = LOGGER if defined?(LOGGER)
       @logger ||= Logger.new($stdout)
       @use_legacy_completion_event = true
       @failure_queue_ttl = nil
