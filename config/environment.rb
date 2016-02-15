@@ -28,13 +28,13 @@ require 'benchmark'
 $LOAD_PATH.unshift(File.expand_path('../../lib', __FILE__))
 require 'tootsie'
 
-config_path = File.expand_path("../tootsie.conf", __FILE__)
-if File.exist?(config_path)
-  Tootsie::Configuration.instance.load_from_file(config_path)
-end
-
 unless defined?(LOGGER)
   $stdout.sync = true
   LOGGER = Logger.new($stdout)
   LOGGER.level = $DEBUG ? Logger::DEBUG : Logger::INFO
+end
+
+config_path = File.expand_path("../tootsie.conf", __FILE__)
+if File.exist?(config_path)
+  Tootsie::Configuration.instance.load_from_file(config_path)
 end
