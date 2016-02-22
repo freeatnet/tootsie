@@ -174,15 +174,15 @@ FFmpeg and ImageMagick are invoked for each job to perform the transcoding. Thes
 Video jobs have the `type` key set to either `video`, `audio`. Currently, `audio` is simply an alias for `video` and handled by the same pipeline. The key `params` must be set to a hash with these keys:
 
 * `input_url`: URL to input file, either an HTTP URL or an S3 URL (see below).
+* `thumbnail`: If specified, a thumbnail will be generated based on the options in this hash with the following keys:
+    * `target_url`: URL to output resource, either an HTTP URL which accepts POSTs, or an S3 URL.
+    * `width`: Desired width of thumbnail, defaults to output width.
+    * `height`: Desired height of thumbnail, defaults to output height.
+    * `at_seconds`: Desired point (in seconds) at which the thumbnail frame should be captured. Defaults to 50% into stream.
+    * `at_fraction`: Desired point (in percentage) at which the thumbnail frame should be captured. Defaults to 50% into stream.
+    * `force_aspect_ratio`: If `true`, force aspect ratio; otherwise aspect is preserved when computing dimensions.
 * `versions`: Either a hash or an array of such hashes, each with the following keys:
     * `target_url`: URL to output resource, either an HTTP URL which accepts POSTs, or an S3 URL.
-    * `thumbnail`: If specified, a thumbnail will be generated based on the options in this hash with the following keys:
-        * `target_url`: URL to output resource, either an HTTP URL which accepts POSTs, or an S3 URL.
-        * `width`: Desired width of thumbnail, defaults to output width.
-        * `height`: Desired height of thumbnail, defaults to output height.
-        * `at_seconds`: Desired point (in seconds) at which the thumbnail frame should be captured. Defaults to 50% into stream.
-        * `at_fraction`: Desired point (in percentage) at which the thumbnail frame should be captured. Defaults to 50% into stream.
-        * `force_aspect_ratio`: If `true`, force aspect ratio; otherwise aspect is preserved when computing dimensions.
     * `audio_sample_rate`: Audio sample rate, in hertz.
     * `audio_bitrate`: Audio bitrate, in bits per second.
     * `audio_codec`: Audio codec name, eg. `mp4`.
