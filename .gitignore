@@ -1,8 +1,8 @@
 *~
 .DS_Store
 /.bundle
-/log
-/tmp
+/log/*
+/tmp/*
 /trash
 .rvmrc
 *.sublime-project
