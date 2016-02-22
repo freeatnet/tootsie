@@ -15,6 +15,10 @@ SimpleCov.add_filter 'spec'
 SimpleCov.add_filter 'config'
 SimpleCov.start
 
+require 'logger'
+LOGGER = Logger.new('log/test.log')
+LOGGER.level = Logger::DEBUG
+
 require_relative '../config/environment'
 require_relative '../api/v1'
 
