@@ -9,7 +9,13 @@ describe VideoProcessor do
 
   describe "#execute!" do
     let(:input_url) { "http://example.com/video.mp4" }
-    let(:input_data) { "garblegarblegarble" + rand(0..1000).to_s }
+    let(:input_data) do
+      file_path = File.expand_path("../test_files/big_buck_bunny.mp4", File.dirname(__FILE__))
+      File.open(file_path) do |file|
+        file.read
+      end
+    end
+
     let(:output_url) { "http://example.com/video.flv" }
     let(:output_data) { "DATA" + rand(0..1000).to_s }
 
@@ -37,19 +43,16 @@ describe VideoProcessor do
       let!(:post_stub) do
         stub_request(:post, output_url).with(
           :headers => {'Content-Type' => version_options[:content_type]},
-          :body => output_data
+          # :body => output_data
         ).to_return(:status => 200)
       end
 
       before(:each) do
         expect_any_instance_of(FfmpegAdapter).to receive(:transcode).
-          with(kind_of(String), kind_of(String), kind_of(Hash)).
-          once { |_, in_path, out_path, adapter_options|
-          expect(adapter_options).to include(version_options.except(:target_url))
-          File.open(out_path, "w") { |f|
-            f.write(output_data)
-          }
-        }
+          with(kind_of(String), hash_including(version_options.except(:target_url))).
+          and_call_original
+
+        expect_any_instance_of(FfmpegAdapter).to_not receive(:thumbnail)
       end
 
       context "versions as a hash" do
@@ -82,7 +85,7 @@ describe VideoProcessor do
     end
 
     context "with video transcoding and a thumbnail requested" do
-      let(:thumbnail_target_url) { "http://example.com/video.jpg" }
+      let(:thumbnail_target_url) { "http://example.com/video.png" }
       let(:thumbnail_options) do
         {
           :target_url => thumbnail_target_url,
@@ -106,7 +109,7 @@ describe VideoProcessor do
       let!(:version_post_stub) do
         stub_request(:post, output_url).with(
           :headers => {'Content-Type' => version_options[:content_type]},
-          :body => output_data
+          # :body => output_data
         ).to_return(:status => 200)
       end
 
@@ -118,13 +121,12 @@ describe VideoProcessor do
 
       before(:each) do
         expect_any_instance_of(FfmpegAdapter).to receive(:transcode).
-          with(kind_of(String), kind_of(String), kind_of(Hash)).
-          once { |_, in_path, out_path, adapter_options|
-          expect(adapter_options).to include(version_options.except(:target_url))
-          File.open(out_path, "w") { |f|
-            f.write(output_data)
-          }
-        }
+          with(kind_of(String), hash_including(version_options.except(:target_url))).
+          and_call_original
+
+        expect_any_instance_of(FfmpegAdapter).to receive(:thumbnail).
+          with(kind_of(String), hash_including(thumbnail_options.except(:target_url))).
+          and_call_original
       end
 
       let(:processor_params) do
@@ -138,6 +140,43 @@ describe VideoProcessor do
       it "performs basic transcoding and creates a thumbnail" do
         subject.execute!
         expect(version_post_stub).to have_been_requested
+        expect(thumbnail_post_stub).to have_been_requested
+      end
+    end
+
+    context "with a thumbnail only" do
+      let(:thumbnail_target_url) { "http://example.com/video.png" }
+      let(:thumbnail_options) do
+        {
+          :target_url => thumbnail_target_url,
+          :width => 600,
+          :height => 400
+        }
+      end
+
+      let!(:thumbnail_post_stub) do
+        # TODO: Verify headers and data for the thumbnail
+        stub_request(:post, thumbnail_target_url).
+          to_return(:status => 200)
+      end
+
+      before(:each) do
+        expect_any_instance_of(FfmpegAdapter).to_not receive(:transcode)
+
+        expect_any_instance_of(FfmpegAdapter).to receive(:thumbnail).
+          with(kind_of(String), hash_including(thumbnail_options.except(:target_url))).
+          and_call_original
+      end
+
+      let(:processor_params) do
+        {
+          :input_url => input_url,
+          :thumbnail => thumbnail_options
+        }
+      end
+
+      it "creates a thumbnail" do
+        subject.execute!
         expect(thumbnail_post_stub).to have_been_requested
       end
     end

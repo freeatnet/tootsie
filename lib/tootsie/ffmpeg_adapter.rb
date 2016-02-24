@@ -1,30 +1,29 @@
 module Tootsie
-
   class FfmpegError < StandardError; end
 
   class FfmpegAdapter
-
     include PrefixedLogging
 
-    def initialize(options = {})
-      @ffmpeg_binary = 'ffmpeg'
+    FFMPEG_BINARY = 'ffmpeg'
+
+    def initialize(input_filename, options = {})
       @ffmpeg_arguments = {}
+      @ffmpeg_arguments['i'] = input_filename
+
       @ffmpeg_arguments['threads'] = (options[:thread_count] || 1)
 
       # ffmpeg only requires level 1 to get stream info, but libav's ffmpeg
       # tool requires a higher level.
       @ffmpeg_arguments['v'] = 99
 
-      # TODO: This will cause some streams to abort when they contain just a
-      #   few corrupt frames. Disabling for now.
-      #@ffmpeg_arguments['xerror'] = true
-      # TODO: Only in newer FFmpeg versions
-      #@ffmpeg_arguments['loglevel'] = 'verbose'
+      # Overwrite existing output files
       @ffmpeg_arguments['y'] = true
     end
 
     # Transcode a file by taking an input file and writing an output file.
-    def transcode(input_filename, output_filename, options = {})
+    def transcode(output_filename, options = {})
+      probe! unless probed?
+
       arguments = @ffmpeg_arguments.dup
       if options[:audio_codec].to_s == 'none'
         arguments['an'] = true
@@ -64,7 +63,7 @@ module Tootsie
       progress, expected_duration, final_duration, stream_count,
         error_count = @progress, nil, nil, 0, 0
       result_width, result_height = nil
-      run_ffmpeg(input_filename, output_filename, arguments) do |line|
+      run_ffmpeg(output_filename, arguments) do |line|
         case line
           when /^Input #\d/
             stream_count += 1
@@ -108,33 +107,41 @@ module Tootsie
           raise FfmpegError, "ffmpeg failed with errors"
         end
       end
-
-      thumbnail_options = options[:thumbnail]
-      if thumbnail_options
-        thumb_width = thumbnail_options[:width].try(:to_i) || options[:width].try(:to_i)
-        thumb_height = thumbnail_options[:height].try(:to_i) || options[:height].try(:to_i)
-        if not thumbnail_options[:force_aspect_ratio] and result_width and result_height
-          thumb_height = (thumb_width / (result_width / result_height.to_f)).to_i
-        end
-        at_seconds = thumbnail_options[:at_seconds].try(:to_f)
-        at_seconds ||= (expected_duration || 0) * (thumbnail_options[:at_fraction].try(:to_f) || 0.5)
-        logger.info("Getting thumbnail frame (#{thumb_width}x#{thumb_height}) with FFmpeg at #{at_seconds} seconds")
-        begin
-          run_ffmpeg(input_filename, thumbnail_options[:filename], @ffmpeg_arguments.merge(
-            :ss => at_seconds,
-            :vcodec => :mjpeg,
-            :vframes => 1,
-            :an => true,
-            :f => :rawvideo,
-            :s => "#{thumb_width}x#{thumb_height}"))
-        rescue CommandExecutionFailed => e
-          logger.error("Thumbnail rendering failed, ignoring: #{e}")
-        end
-      end
     end
 
-    attr_accessor :ffmpeg_binary
-    attr_accessor :ffmpeg_arguments
+    def thumbnail(output_filename, options = {})
+      probe! unless probed?
+
+      raise FfmpegError, "The file does not contain a video stream" unless first_video_stream
+
+      arguments = @ffmpeg_arguments.dup
+
+      # Set thumbnail size
+      width = options[:width].try(:to_i)
+      height = options[:height].try(:to_i)
+      if height and width and not options[:force_aspect_ratio]
+        video_aspect = first_video_stream.width / first_video_stream.height.to_f
+        height = (width / video_aspect).to_i
+      end
+      arguments['s'] = "#{width}x#{height}"
+
+      # Set thumbnail time
+      at_seconds = options[:at_seconds].try(:to_f)
+      at_seconds ||= (first_video_stream.duration.to_i || 0) * (options[:at_fraction].try(:to_f) || 0.5)
+      arguments['ss'] = at_seconds
+
+      logger.info("Getting thumbnail frame (#{arguments['s']}) with FFmpeg at #{arguments['ss']} seconds")
+
+      # Tell ffmpeg to grab one frame
+      arguments['vframes'] = 1
+
+      begin
+        run_ffmpeg(output_filename, arguments)
+      rescue CommandExecutionFailed => e
+        logger.error("Thumbnail rendering failed: #{e}")
+        raise FfmpegError, "ffmpeg thumbnailing failed"
+      end
+    end
 
     # Output captured from FFmpeg command line tool so far.
     attr_reader :output
@@ -145,24 +152,37 @@ module Tootsie
 
     private
 
-      def run_ffmpeg(input_filename, output_filename, arguments, &block)
-        command_line = @ffmpeg_binary.dup
-        command_line << " -i '#{input_filename}' "
-        command_line << arguments.map { |k, v|
-          case v
-            when TrueClass, FalseClass
-              "-#{k}"
-            when Array
-              v.map { |w| "-#{k} '#{w}'" }.join(' ')
-            else
-              "-#{k} '#{v}'"
-          end
-        }.join(' ')
-        command_line << ' '
-        command_line << "'#{output_filename}'"
-        CommandRunner.new(command_line).run(&block)
-      end
+    def probe!
+      probe
+    end
 
+    def probe
+      @ffprober ||= Ffprober::Parser.from_file(@ffmpeg_arguments['i'])
+    end
+
+    def probed?
+      !!@ffprober
+    end
+
+    def first_video_stream
+      probe.video_streams.first
+    end
+
+    def run_ffmpeg(output_filename, arguments, &block)
+      command_line = "#{FFMPEG_BINARY} "
+      command_line << arguments.map { |k, v|
+        case v
+          when TrueClass, FalseClass
+            "-#{k}"
+          when Array
+            v.map { |w| "-#{k} '#{w}'" }.join(' ')
+          else
+            "-#{k} '#{v}'"
+        end
+      }.join(' ')
+      command_line << ' '
+      command_line << "'#{output_filename}'"
+      CommandRunner.new(command_line).run(&block)
+    end
   end
-
 end

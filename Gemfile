@@ -15,6 +15,9 @@ gem 'nokogiri', '~> 1.6.1'
 gem 'pebblebed', '~> 0.3.0'
 gem 'pebbles-river', '~> 0.2.0'
 
+# Media support
+gem 'ffprober', '~> 0.5.1'
+
 group :production do
   gem 'airbrake', '~> 3.1'
 end

@@ -115,7 +115,7 @@ module Tootsie
       private
 
         def ensure_temp_file
-          @temp_file ||= Tempfile.open('tootsie')
+          @temp_file ||= Tempfile.open(['tootsie', File.extname(@uri.path)])
         end
 
     end

@@ -33,7 +33,7 @@ Tootsie can read files via HTTP[S], and can upload data via HTTP[S] POSTs. In ad
 Dependencies
 ------------
 
-* Ruby 1.9.3 or later.
+* Ruby 2.0 or later.
 * Unix-like system (no Windows support currently).
 * AMQP server such as RabbitMQ.
 * **For video jobs**
